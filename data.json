@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Лев",
+    "description": "Масло, 160х120 см",
+    "layers": [
+      { "image": "images/fon1.png", "speed": 0.1 },
+      { "image": "images/kar1.png", "speed": 0.7 }
+    ]
+  },
+  {
+    "title": "Пять глаз",
+    "description": "Масло, поталь 100х100 см",
+    "layers": [
+      { "image": "images/fon2.png", "speed": 0.1 },
+      { "image": "images/kar2.png", "speed": 0.8 }
+    ]
+  },
+  {
+    "title": "Дежавю",
+    "description": "Масло, 160х100 см",
+    "layers": [
+      { "image": "images/f5.png", "speed": 0.1 },
+      { "image": "images/kar3.png", "speed": 0.8 }
+    ]
+  },
+  {
+    "title": "Восход",
+    "description": "Масло, 120х100 см",
+    "layers": [
+      { "image": "images/f7.png", "speed": 0.1 },
+      { "image": "images/kar4.png", "speed": 0.8 }
+    ]
+  }
+]
