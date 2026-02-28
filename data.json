@@ -4,6 +4,8 @@
     "description": "Масло, 160х120 см",
     "layers": [
       { "image": "images/fon1.png", "speed": 0.1 },
+      { "image": "images/z_g.png", "speed": 0.3 },
+      { "image": "images/p_g.png", "speed": 0.4 },
       { "image": "images/kar1.png", "speed": 0.7 }
     ]
   },
