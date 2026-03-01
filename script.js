@@ -35,7 +35,25 @@ function createScenes(data) {
 
     scene.appendChild(img);
     });
+    //контент
+    const content = document.createElement("div");
+    content.className = "info-card";
 
+    const title = document.createElement("div");
+    title.className = "info-title";
+    title.textContent = item.title;
+
+    const short = document.createElement("div");
+    short.className = "info-short";
+    short.textContent = item.short;
+
+    content.appendChild(title);
+    content.appendChild(short);
+    scene.appendChild(content);
+
+    // клик по всей карточке
+    content.addEventListener("click", () => openModal(item));
+/*
     // контент
     const content = document.createElement("div");
     content.className = "content";
@@ -51,7 +69,7 @@ function createScenes(data) {
     content.appendChild(title);
     content.appendChild(short);
     scene.appendChild(content);
-
+*/
     // клик
     title.addEventListener("click", () => openModal(item));
 

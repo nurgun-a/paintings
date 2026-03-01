@@ -29,28 +29,52 @@ body {
   transition: transform 0.3s ease;
 }
 
-.content {
+
+
+/* ===== Информационная карточка ===== */
+
+.info-card {
   position: absolute;
-  bottom: 10%;
-  left: 10%;
-  max-width: 500px;
-  z-index: 100;
-}
+  bottom: 8%;
+  left: 8%;
+  max-width: 420px;
 
-.title {
-  font-size: 32px;
+  padding: 25px 30px;
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+
+  border-radius: 25px;
+    /*border: 1px solid rgba(255,255,255,0.1);*/
   cursor: pointer;
-  transition: transform 0.3s ease, text-shadow 0.3s ease;
+  z-index: 200;
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
-.title:hover {
-  transform: translateZ(20px) scale(1.05);
-  text-shadow: 0 10px 30px rgba(0,0,0,0.6);
+/* Hover-эффект как у кнопок навигации */
+.info-card:hover {
+  transform: translateY(-5px) scale(1.05);
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-.short {
-  opacity: 0.8;
+/* Заголовок */
+.info-title {
+  font-size: 30px;
+  margin-bottom: 8px;
 }
+
+/* Краткое описание */
+.info-short {
+  font-size: 16px;
+  opacity: 0.85;
+}
+
+
 
 /* Модалка */
 
