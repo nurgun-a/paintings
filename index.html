@@ -2,13 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Artist Portfolio</title>
+  <title>Museum</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="scroll-container">
-  <div id="gallery" class="gallery"></div>
+<div id="gallery"></div>
+
+<!-- Модальное окно -->
+<div id="modal" class="hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <button id="closeBtn">✕</button>
+    <h2 id="modalTitle"></h2>
+    <p id="modalShort"></p>
+    <p id="modalFull"></p>
+  </div>
 </div>
 
 <script src="script.js"></script>

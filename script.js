@@ -1,206 +1,155 @@
-const gallery = document.getElementById("gallery");
-
 let scenes = [];
 let currentIndex = 0;
-
-let currentX = 0;
-let targetX = 0;
-
-let isLocked = false;
-
-let mouseX = 0;
-let mouseY = 0;
-
-let smoothMouseX = 0;
-let smoothMouseY = 0;
-
-const ease = 0.04;          // медленнее и плавнее
-const scrollThreshold = 150; // увеличенный порог
-const animationDuration = 1100; // блокировка на время анимации
-
-/* ===============================
-   ЗАГРУЗКА ДАННЫХ
-================================ */
+let isScrolling = false;
+let idleOffset = 0;
 
 fetch("data.json")
   .then(res => res.json())
   .then(data => {
-
-    data.forEach(item => {
-
-      const scene = document.createElement("section");
-      scene.classList.add("scene");
-
-      item.layers.forEach((layerData, i) => {
-
-        const layer = document.createElement("div");
-        layer.classList.add("layer");
-        layer.dataset.speed = layerData.speed;
-        layer.dataset.depth = i;
-
-        if (layerData.type === "painting") {
-          layer.classList.add("painting");
-          layer.innerHTML = `<img src="${layerData.image}" />`;
-        } else {
-          layer.style.backgroundImage =
-            `url(${layerData.image})`;
-        }
-
-        scene.appendChild(layer);
-      });
-
-      const content = document.createElement("div");
-      content.classList.add("content");
-      content.innerHTML = `
-        <h1>${item.title}</h1>
-        <p>${item.description}</p>
-      `;
-
-      scene.appendChild(content);
-      gallery.appendChild(scene);
-    });
-
-    scenes = document.querySelectorAll(".scene");
-
-    document.body.style.height =
-      `${window.innerWidth * scenes.length}px`;
-
-    initControls();
-    animate();
+    createScenes(data);
+    initScroll();
+    initParallax();
+    initModal();
   });
 
-/* ===============================
-   УПРАВЛЕНИЕ
-================================ */
+function createScenes(data) {
+  const gallery = document.getElementById("gallery");
 
-let scrollAccumulator = 0;
+  data.forEach((item, index) => {
 
-function initControls() {
-    window.addEventListener("mousemove", (e) => {
+    const scene = document.createElement("div");
+    scene.className = "scene";
+    scene.style.transform = `translateX(${index * 100}%)`;
 
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
+    // слои
+    item.layers.forEach((layerData, i) => {
 
-    mouseX = (e.clientX - centerX) / centerX;
-    mouseY = (e.clientY - centerY) / centerY;
+    const img = document.createElement("img");
+    img.src = layerData.images;
+    img.className = "layer";
+    img.style.zIndex = i;
+
+    // сохраняем скорость прямо в dataset
+    img.dataset.speed = layerData.speed;
+
+    scene.appendChild(img);
     });
 
+    // контент
+    const content = document.createElement("div");
+    content.className = "content";
+
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = item.title;
+
+    const short = document.createElement("div");
+    short.className = "short";
+    short.textContent = item.short;
+
+    content.appendChild(title);
+    content.appendChild(short);
+    scene.appendChild(content);
+
+    // клик
+    title.addEventListener("click", () => openModal(item));
+
+    gallery.appendChild(scene);
+    scenes.push(scene);
+  });
+}
+
+function initScroll() {
   window.addEventListener("wheel", (e) => {
+    if (isScrolling) return;
 
-    if (isLocked) return;
-
-    scrollAccumulator += e.deltaY;
-
-    if (Math.abs(scrollAccumulator) < scrollThreshold)
+    if (e.deltaY > 50 && currentIndex < scenes.length - 1) {
+      currentIndex++;
+    } else if (e.deltaY < -50 && currentIndex > 0) {
+      currentIndex--;
+    } else {
       return;
-
-    if (scrollAccumulator > 0) {
-      goToScene(currentIndex + 1);
-    } else {
-      goToScene(currentIndex - 1);
     }
 
-    scrollAccumulator = 0;
+    isScrolling = true;
+    updateScenes();
+
+    setTimeout(() => isScrolling = false, 900);
   });
 }
 
-/* ===============================
-   ПЕРЕХОД К СЦЕНЕ
-================================ */
-
-function goToScene(index) {
-
-  if (index < 0 || index >= scenes.length)
-    return;
-
-  if (index === currentIndex)
-    return;
-
-  isLocked = true;
-
-  currentIndex = index;
-  targetX = index * window.innerWidth;
-
-  setTimeout(() => {
-    isLocked = false;
-  }, animationDuration);
-}
-
-/* ===============================
-   АНИМАЦИЯ
-================================ */
-
-function animate() {
-
-  currentX += (targetX - currentX) * ease;
-
-  gallery.style.transform =
-    `translateX(${-currentX}px)`;
-
-  updateParallax();
-  updateActive();
-
-  requestAnimationFrame(animate);
-}
-
-/* ===============================
-   3D ПАРАЛЛАКС (без накопления!)
-================================ */
-
-function updateParallax() {
-
-  // плавность движения мыши
-  smoothMouseX += (mouseX - smoothMouseX) * 0.08;
-  smoothMouseY += (mouseY - smoothMouseY) * 0.08;
-
+function updateScenes() {
   scenes.forEach((scene, i) => {
-
-    const offset = i * window.innerWidth;
-    const distance = currentX - offset;
-
-    const rotate = distance * 0.0005;
-
-    scene.style.transform =
-      `rotateY(${rotate}deg)`;
-
-    scene.querySelectorAll(".layer")
-      .forEach(layer => {
-
-        const speed = parseFloat(layer.dataset.speed);
-        const depth = parseFloat(layer.dataset.depth);
-
-        const moveX = distance * speed * -0.35;
-
-        // мышиный параллакс
-        const mouseMoveX = smoothMouseX * 40 * speed;
-        const mouseMoveY = smoothMouseY * 30 * speed;
-
-        const z = (depth - 3) * 150;
-
-        layer.style.transform =
-          `
-          translateX(${moveX + mouseMoveX}px)
-          translateY(${mouseMoveY}px)
-          translateZ(${z}px)
-          `;
-      });
+    scene.style.transform = `translateX(${(i - currentIndex) * 100}%)`;
   });
 }
 
-/* ===============================
-   АКТИВНАЯ СЦЕНА
-================================ */
+function initParallax() {
 
-function updateActive() {
+  let time = 0;
+  let mouseX = 0;
+  let mouseY = 0;
 
-  scenes.forEach((scene, i) => {
+  // 🔹 Параллакс от мыши (очень мягкий)
+  window.addEventListener("mousemove", (e) => {
 
-    if (i === currentIndex) {
-      scene.style.opacity = 1;
-      scene.style.transform += " scale(1)";
-    } else {
-      scene.style.opacity = 0.6;
-      scene.style.transform += " scale(0.94)";
+    mouseX = (e.clientX - window.innerWidth / 2) / window.innerWidth;
+    mouseY = (e.clientY - window.innerHeight / 2) / window.innerHeight;
+
+  });
+
+  function animate() {
+
+    time += 0.015; // скорость дыхания
+
+    const activeScene = scenes[currentIndex];
+    if (!activeScene) {
+      requestAnimationFrame(animate);
+      return;
     }
-  });
+
+    const layers = activeScene.querySelectorAll(".layer");
+
+    layers.forEach((layer) => {
+
+      const speed = parseFloat(layer.dataset.speed) || 0;
+
+      // 🔹 Мышь (макс ~5px при speed=1)
+      const parallaxX = mouseX * speed * 15;
+      const parallaxY = mouseY * speed * 15;
+
+      // 🔹 Дыхание (макс ~1.5px)
+      const driftX = Math.sin(time) * speed * 1.5;
+      const driftY = Math.cos(time * 0.8) * speed * 1.5;
+
+      // 🔥 Собираем transform заново
+      layer.style.transform = `
+        translate(${parallaxX + driftX}px, 
+                  ${parallaxY + driftY}px)
+      `;
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+/* модальное окно */
+
+function initModal() {
+  document.getElementById("closeBtn").onclick = closeModal;
+  document.querySelector(".modal-overlay").onclick = closeModal;
+}
+
+function openModal(item) {
+  document.getElementById("modalTitle").textContent = item.title;
+  document.getElementById("modalShort").textContent = item.short;
+  document.getElementById("modalFull").textContent = item.full;
+
+
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
 }

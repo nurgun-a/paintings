@@ -1,75 +1,93 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  background: #111;
-  font-family: sans-serif;
-  overflow-x: hidden;
-}
-
-/* Контейнер для fake-scroll */
-.scroll-container {
-  position: fixed;
-  width: 100%;
-  height: 100vh;
+  margin: 0;
   overflow: hidden;
-  perspective: 1400px;
+  background: #0e0e0e;
+  font-family: Arial, sans-serif;
+  color: white;
 }
 
-/* Горизонтальная галерея */
-.gallery {
-  display: flex;
+#gallery {
   height: 100vh;
-  will-change: transform;
-  transform-style: preserve-3d;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
 }
 
 .scene {
-  position: relative;
-  min-width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  scroll-snap-align: center;
-  transform-style: preserve-3d;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s ease;
 }
 
-/* Слои */
 .layer {
   position: absolute;
   width: 100%;
   height: 100%;
-  top: 0%;
-  left: 0%;
-  background-size: cover;
-  background-position: center;
+  object-fit: cover;
   pointer-events: none;
-}
-
-.layer.painting {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.layer.painting img {
-  max-height: 70vh;
-  box-shadow: 0 40px 120px rgba(0,0,0,0.7);
-  transform: scale(0.95);
-  transition: transform 0.8s ease;
-}
-
-.scene.active .painting img {
-  transform: scale(1);
+  transition: transform 0.3s ease;
 }
 
 .content {
   position: absolute;
-  bottom: 12%;
-  left: 8%;
-  max-width: 400px;
-  color: white;
-  z-index: 10;
+  bottom: 10%;
+  left: 10%;
+  max-width: 500px;
+  z-index: 100;
+}
+
+.title {
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.title:hover {
+  transform: translateZ(20px) scale(1.05);
+  text-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.short {
+  opacity: 0.8;
+}
+
+/* Модалка */
+
+#modal.hidden {
+  display: none;
+}
+
+#modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  max-width: 800px;
+  width: 90%;
+  background: #111;
+  padding: 40px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.modal-content h2 {
+  font-size: 36px;
+}
+
+.modal-content img {
+  width: 100%;
+  margin-top: 20px;
 }
