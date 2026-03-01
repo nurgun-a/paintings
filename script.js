@@ -7,7 +7,8 @@ fetch("data.json")
   .then(res => res.json())
   .then(data => {
     createScenes(data);
-    initScroll();
+    initNavigation();
+    updateNavButtons();
     initParallax();
     initModal();
   });
@@ -59,23 +60,41 @@ function createScenes(data) {
   });
 }
 
-function initScroll() {
-  window.addEventListener("wheel", (e) => {
+function initNavigation() {
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  prevBtn.addEventListener("click", () => {
     if (isScrolling) return;
+    if (currentIndex === 0) return;
 
-    if (e.deltaY > 50 && currentIndex < scenes.length - 1) {
-      currentIndex++;
-    } else if (e.deltaY < -50 && currentIndex > 0) {
-      currentIndex--;
-    } else {
-      return;
-    }
-
-    isScrolling = true;
-    updateScenes();
-
-    setTimeout(() => isScrolling = false, 900);
+    currentIndex--;
+    changeScene();
   });
+
+  nextBtn.addEventListener("click", () => {
+    if (isScrolling) return;
+    if (currentIndex === scenes.length - 1) return;
+
+    currentIndex++;
+    changeScene();
+  });
+}
+
+function changeScene() {
+
+  isScrolling = true;
+
+  scenes.forEach((scene, i) => {
+    scene.style.transform = `translateX(${(i - currentIndex) * 100}%)`;
+  });
+
+  updateNavButtons(); // ← ВАЖНО
+
+  setTimeout(() => {
+    isScrolling = false;
+  }, 800);
 }
 
 function updateScenes() {
@@ -152,4 +171,24 @@ function openModal(item) {
 
 function closeModal() {
   document.getElementById("modal").classList.add("hidden");
+}
+
+function updateNavButtons() {
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  // Левая кнопка
+  if (currentIndex === 0) {
+    prevBtn.classList.add("hidden");
+  } else {
+    prevBtn.classList.remove("hidden");
+  }
+
+  // Правая кнопка
+  if (currentIndex === scenes.length - 1) {
+    nextBtn.classList.add("hidden");
+  } else {
+    nextBtn.classList.remove("hidden");
+  }
 }
