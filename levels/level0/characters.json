@@ -1,0 +1,130 @@
+{
+    "ded": {
+        "id": "ded",
+        "image": "/levels/level0/assets/images/ded.png",
+        "left": "2%",
+        "bottom": "2%",
+        "width": "430px",
+        "height": "500px",
+        "zIndex": 10,
+        "animations": {
+            "speak": "scale(1.02)",
+            "enter": "fadeInUp",
+            "exit": "fadeOutDown"
+        }
+    },
+    "baba": {
+        "id": "baba",
+        "image": "/levels/level0/assets/images/baba.png",
+        "left": "55%",
+        "bottom": "10%",
+        "width": "430px",
+        "height": "500px",
+        "zIndex": 10,
+        "animations": {
+            "speak": "scale(1.02)",
+            "enter": "fadeInUp",
+            "exit": "fadeOutDown"
+        }
+    },
+    "baba_smile": {
+        "id": "baba_smile",
+        "image": "/levels/level0/assets/images/baba_smile.png",
+        "left": "35%",
+        "bottom": "5%",
+        "width": "500px",
+        "height": "500px",
+        "zIndex": 10
+    },
+    "kolobok_raw": {
+        "id": "kolobok_raw",
+        "image": "/levels/level0/assets/images/kolobok_raw.png",
+        "left": "45%",
+        "bottom": "25%",
+        "width": "250px",
+        "height": "250px",
+        "zIndex": 10
+    },
+    "kolobok_final": {
+        "id": "kolobok_final",
+        "image": "/levels/level0/assets/images/kolobok_final.png",
+        "left": "30%",
+        "bottom": "15%",
+        "width": "300px",
+        "height": "300px",
+        "zIndex": 10
+    },
+    "kolobok_meet": {
+        "id": "kolobok_meet",
+        "image": "/levels/level0/assets/images/kolobok_final.png",
+        "left": "75%",
+        "bottom": "15%",
+        "width": "300px",
+        "height": "300px",
+        "zIndex": 10
+    },
+    "kolobok_move": {
+        "id": "kolobok_move",
+        "image": "/levels/level0/assets/images/kolobok_final.png",
+        "left": "40%",
+        "bottom": "30%",
+        "width": "300px",
+        "height": "300px",
+        "zIndex": 10
+    },
+    "kolobok_quiz": {
+        "id": "kolobok_quiz",
+        "image": "/levels/level0/assets/images/kolobok_final.png",
+        "left": "75%",
+        "bottom": "15%",
+        "width": "300px",
+        "height": "300px",
+        "zIndex": 10
+    },
+    "zayac": {
+        "id": "zayac",
+        "image": "/levels/level0/assets/images/zayac.png",
+        "left": "3%",
+        "bottom": "20%",
+        "width": "400px",
+        "height": "450px",
+        "zIndex": 10
+    },
+    "volk": {
+        "id": "volk",
+        "image": "/levels/level0/assets/images/volk.png",
+        "left": "3%",
+        "bottom": "20%",
+        "width": "400px",
+        "height": "450px",
+        "zIndex": 10
+    },
+    "medved": {
+        "id": "medved",
+        "image": "/levels/level0/assets/images/medved.png",
+        "left": "3%",
+        "bottom": "20%",
+        "width": "400px",
+        "height": "450px",
+        "zIndex": 10
+    },
+    "lisa": {
+        "id": "lisa",
+        "image": "/levels/level0/assets/images/lisa.png",
+        "left": "10%",
+        "bottom": "15%",
+        "width": "420px",
+        "height": "470px",
+        "zIndex": 10
+    },
+    "portal": {
+        "id": "portal",
+        "image": "/levels/level0/assets/images/portal.png",
+        "left": "35%",
+        "bottom": "25%",
+        "width": "800px",
+        "height": "800px",
+        "zIndex": 15,
+        "clickable": true
+    }
+}

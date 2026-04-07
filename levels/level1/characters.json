@@ -1,0 +1,93 @@
+{
+    "cat": {
+        "id": "cat",
+        "image": "/levels/level1/assets/images/cat.png",
+        "left": "15%",
+        "bottom": "15%",
+        "width": "200px",
+        "height": "250px",
+        "zIndex": 10
+    },
+    "hen": {
+        "id": "hen",
+        "image": "/levels/level1/assets/images/hen.png",
+        "left": "15%",
+        "bottom": "15%",
+        "width": "180px",
+        "height": "230px",
+        "zIndex": 10
+    },
+    "grandpa": {
+        "id": "grandpa",
+        "image": "/levels/level1/assets/images/grandpa.png",
+        "left": "15%",
+        "bottom": "15%",
+        "width": "200px",
+        "height": "250px",
+        "zIndex": 10
+    },
+    "kolobok_dialog": {
+        "id": "kolobok_dialog",
+        "image": "/levels/level1/assets/images/kolobok_dialog.png",
+        "left": "65%",
+        "bottom": "20%",
+        "width": "100px",
+        "height": "100px",
+        "zIndex": 10
+    },
+    "kolobok": {
+        "id": "kolobok_map",
+        "image": "/levels/level1/assets/images/kolobok_map.png",
+        "left": "50%",
+        "bottom": "15%",
+        "width": "60px",
+        "height": "60px",
+        "zIndex": 15,
+        "animation": "bounce",
+        "speed": 500
+    },
+    "houses": {
+        "cat": {
+            "id": "cat_house",
+            "image": "/levels/level1/assets/images/houses/cat_house.png",
+            "left": "20%",
+            "bottom": "40%",
+            "width": "100px",
+            "height": "100px",
+            "zIndex": 20,
+            "sceneId": "cat"
+        },
+        "hen": {
+            "id": "hen_house",
+            "image": "/levels/level1/assets/images/houses/hen_house.png",
+            "left": "50%",
+            "bottom": "35%",
+            "width": "100px",
+            "height": "100px",
+            "zIndex": 20,
+            "sceneId": "hen"
+        },
+        "turnip": {
+            "id": "turnip_house",
+            "image": "/levels/level1/assets/images/houses/turnip_house.png",
+            "left": "80%",
+            "bottom": "45%",
+            "width": "100px",
+            "height": "100px",
+            "zIndex": 20,
+            "sceneId": "turnip"
+        }
+    },
+    "portal": {
+        "id": "portal_map",
+        "image": "/levels/level1/assets/images/portal.png",
+        "left": "45%",
+        "bottom": "20%",
+        "width": "80px",
+        "height": "80px",
+        "zIndex": 100,
+        "animation": "portalPulse",
+        "nextLevel": "/level2.html"
+    }
+    
+}

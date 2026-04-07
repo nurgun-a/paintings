@@ -1,27 +1,84 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Museum</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>СтрахКомикс — Колобок</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
 </head>
 <body>
+    <div id="app">
+        <div class="game-container" id="gameContainer">
+            <!-- Фон -->
+            <div class="background-layer" id="backgroundLayer"></div>
+            
+            <!-- Персонажи (слой поверх фона) -->
+            <div class="characters-layer" id="charactersLayer"></div>
+            
+            <!-- Кликабельные зоны (для сбора муки и т.д.) -->
+            <div class="clickzones-layer" id="clickzonesLayer"></div>
+            
+            <!-- Диалоговое окно -->
+            <div class="dialog-container" id="dialogContainer" style="display: none;">
+                <div class="dialog-bubble" id="dialogBubble">
+                    <p id="dialogText"></p>
+                </div>
+                <button class="dialog-next-btn" id="dialogNextBtn">Далее</button>
+            </div>
+            
+            <!-- Кнопки действий (появляются по необходимости) -->
+            <div class="action-buttons" id="actionButtons"></div>
+            
+            <!-- Счётчик заданий -->
+            <div class="quest-counter" id="questCounter" style="display: none;">
+                <i class="fas fa-wheat-alt"></i> Мука: <span id="flourCount">0</span>/<span id="flourTotal">3</span>
+            </div>
+            
+            <!-- Контейнер для вопросов Лисы (создаётся JS, но стили прописаны в CSS) -->
+            <!-- Сюда динамически добавляются варианты ответов -->
+            
+        </div>
+    </div>
+    
+    <!-- Звуки -->
+    <audio id="soundCollect" src="sounds/collect.mp3" preload="auto"></audio>
+    <audio id="soundBgMusic" src="sounds/bg_music.mp3" preload="auto" loop></audio>
+    <audio id="soundOven" src="sounds/oven.mp3" preload="auto"></audio>
+    <audio id="soundFilmReel" src="sounds/film_reel.mp3" preload="auto"></audio>
+    
+    <button id="soundToggleBtn" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 200;
+    padding: 12px 16px;
+    background: #f0c674;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+">🔊 Звук вкл</button>
 
-<div id="gallery"></div>
+    <script src="js/common.js"></script>
+    <script src="levels/level0/level0.js"></script>
+    <script>
+        // Запуск игры
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Level0 !== 'undefined') {
+                Level0.init();
+            }
+        });
+    </script>
 
-<div class="nav-btn left" id="prevBtn">‹</div>
-<div class="nav-btn right" id="nextBtn">›</div>
-<!-- Модальное окно -->
-<div id="modal" class="hidden">
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <button id="closeBtn">✕</button>
-    <h2 id="modalTitle"></h2>
-    <p id="modalShort"></p>
-    <p id="modalFull"></p>
-  </div>
-</div>
 
-<script src="script.js"></script>
+    <!-- <script src="levels/level1/level1.js"></script> -->
 </body>
 </html>

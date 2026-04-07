@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>СтрахКомикс — Уровень 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 40px;
+            border: 2px solid rgba(255,255,255,0.2);
+            max-width: 600px;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 3rem;
+            color: #f0c674;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #8b5a2b;
+        }
+        p {
+            font-size: 1.2rem;
+            color: white;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+        button {
+            background: #f0c674;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 0 #a57c3c;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a57c3c;
+        }
+        .emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🚀✨</div>
+        <h1>Уровень 2</h1>
+        <p>Скоро здесь появятся новые приключения Колобка!</p>
+        <p>А пока можно вернуться назад и переиграть предыдущие уровни.</p>
+        <button onclick="window.location.href = '/'">← Назад к выбору уровня</button>
+    </div>
+</body>
+</html>

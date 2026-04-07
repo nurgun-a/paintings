@@ -1,0 +1,316 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', 'Comic Neue', system-ui, sans-serif;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    width: 1200px;
+    max-width: 95vw;
+    height: 90vh;
+    max-height: 800px;
+    background: #2c2c3a;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    border: 3px solid #f0c674;
+}
+
+/* ========== СЛОИ ========== */
+.background-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+}
+
+.characters-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;  /* Слой не перехватывает клики */
+}
+
+.characters-layer .character {
+    pointer-events: none;  /* Персонажи не кликабельны */
+}
+
+.clickzones-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+}
+
+#housesLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    pointer-events: auto;  /* Домики кликабельны */
+}
+
+.house {
+    cursor: pointer;
+}
+
+/* ========== ДИАЛОГОВОЕ ОКНО ========== */
+.dialog-container {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 700px;
+    z-index: 100;  /* Выше, чем другие слои */
+    background: rgba(0,0,0,0.7);
+    border-radius: 30px;
+    padding: 16px 24px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dialog-bubble {
+    background: white;
+    border-radius: 28px;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: #2c2c2c;
+    box-shadow: 4px 4px 0 #c9a87b;
+}
+
+.dialog-next-btn {
+    align-self: flex-end;
+    background: #f0c674;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 40px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+    z-index: 101;
+    position: relative;
+}
+
+.dialog-next-btn:active {
+    transform: scale(0.96);
+}
+
+/* ========== КНОПКИ ДЕЙСТВИЙ ========== */
+.action-buttons {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 40;
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    background: #f0c674;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 40px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #a57c3c;
+    transition: 0.05s linear;
+    z-index: 50;
+}
+
+.action-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #a57c3c;
+}
+
+/* ========== СЧЁТЧИК ========== */
+.quest-counter {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    padding: 10px 20px;
+    border-radius: 40px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 10;
+    font-family: monospace;
+}
+
+/* ========== КЛИКАБЕЛЬНЫЕ ЗОНЫ ========== */
+.clickzone {
+    position: absolute;
+    cursor: pointer;
+    transition: filter 0.2s, opacity 0.2s;
+}
+
+.clickzone:hover {
+    filter: brightness(1.1);
+}
+
+.clickzone.collected {
+    opacity: 0.5;
+    filter: grayscale(0.5);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ========== ПЕРСОНАЖИ ========== */
+@keyframes gentleFloat {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+    100% { transform: translateY(0px); }
+}
+
+.character {
+    position: absolute;
+    transition: all 0.3s ease;
+    animation: gentleFloat 3s ease-in-out infinite;
+}
+
+/* ========== АНИМАЦИИ ПОЯВЛЕНИЯ/ИСЧЕЗНОВЕНИЯ ========== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutDown {
+    to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.fade-out-down {
+    animation: fadeOutDown 0.3s ease forwards;
+}
+
+/* ========== ВСПЛЫВАЮЩИЙ ТЕКСТ ========== */
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-60px);
+    }
+}
+
+.floating-text {
+    position: absolute;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffd966;
+    text-shadow: 2px 2px 0 #8b5a2b;
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 0.8s ease-out forwards;
+}
+
+/* ========== ВИДЕО СЛОЙ ========== */
+#videoLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 50;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ========== КОЛОБОК НА КАРТЕ ========== */
+.kolobok-map {
+    transition: left 0.5s ease, bottom 0.5s ease;
+    z-index: 15;
+}
+
+/* ========== ПОРТАЛ ========== */
+@keyframes portalPulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+.portal {
+    animation: portalPulse 1s infinite;
+}
+
+/* ========== ОСТАЛЬНЫЕ ЭФФЕКТЫ (из 0-го уровня) ========== */
+@keyframes filmReelOldDown {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes filmReelNewUp {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.film-old-down {
+    animation: filmReelOldDown 0.5s ease-in forwards;
+}
+
+.film-new-up {
+    animation: filmReelNewUp 0.5s ease-out forwards;
+}
+
+@keyframes panBackground {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 0%; }
+}
+
+.pan-bg {
+    animation: panBackground 3s linear infinite;
+    background-size: auto 100%;
+    background-repeat: repeat-x;
+}
+
+.background-layer.secondary {
+    z-index: 0;
+}
