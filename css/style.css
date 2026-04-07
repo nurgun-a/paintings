@@ -323,7 +323,7 @@ body {
     /* Диалоговое окно - поднимаем выше */
     .dialog-container {
         width: 85%;
-        bottom: 20% !important;
+        bottom:15% !important;
         padding: 12px 16px;
         z-index: 200;
     }
@@ -379,7 +379,7 @@ body {
     /* Диалоговое окно - поднимаем значительно выше */
     .dialog-container {
         position: fixed;
-        bottom: 25% !important;
+        bottom: 15% !important;
         left: 50%;
         transform: translateX(-50%);
         width: 90%;
@@ -661,4 +661,153 @@ body {
 /* Диалоговое окно поверх всего */
 .dialog-container {
     pointer-events: auto;
+}
+/* ========== ФИКСАЦИЯ ПЕРСОНАЖЕЙ ДЛЯ МОБИЛЬНЫХ ========== */
+
+/* Контейнер для персонажей с сохранением пропорций */
+.characters-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Базовые стили для персонажей */
+.character {
+    position: absolute;
+    pointer-events: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    transition: opacity 0.3s ease;
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    /* Дед */
+    .character#ded,
+    .character#baba,
+    .character#baba_smile {
+        width: 28% !important;
+        max-width: 140px !important;
+        min-width: 80px !important;
+    }
+    
+    /* Дед - левая сторона */
+    .character#ded {
+        left: 2% !important;
+        bottom: 5% !important;
+    }
+    
+    /* Бабка - правая сторона */
+    .character#baba,
+    .character#baba_smile {
+        left: auto !important;
+        right: 2% !important;
+        bottom: 5% !important;
+    }
+    
+    /* Колобок в диалогах */
+    .character#kolobok_dialog,
+    .character#kolobok_final,
+    .character#kolobok_meet,
+    .character#kolobok_quiz {
+        width: 20% !important;
+        max-width: 100px !important;
+        min-width: 60px !important;
+        left: auto !important;
+        right: 5% !important;
+        bottom: 10% !important;
+    }
+    
+    /* Колобок на карте (1-й уровень) */
+    .kolobok-map {
+        width: 12% !important;
+        max-width: 70px !important;
+        min-width: 40px !important;
+    }
+    
+    /* Лесные персонажи (заяц, волк, медведь, лиса) */
+    .character#zayac,
+    .character#volk,
+    .character#medved,
+    .character#lisa {
+        width: 25% !important;
+        max-width: 120px !important;
+        min-width: 70px !important;
+        left: 2% !important;
+        bottom: 5% !important;
+    }
+    
+    /* Колобок при встрече */
+    .character#kolobok_meet,
+    .character#kolobok_quiz {
+        left: auto !important;
+        right: 2% !important;
+        bottom: 10% !important;
+    }
+}
+
+/* Планшеты (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .character#ded,
+    .character#baba,
+    .character#baba_smile {
+        width: 22% !important;
+        max-width: 180px !important;
+    }
+    
+    .character#zayac,
+    .character#volk,
+    .character#medved,
+    .character#lisa {
+        width: 20% !important;
+        max-width: 150px !important;
+    }
+}
+
+/* Альбомная ориентация на мобильных */
+@media (max-width: 900px) and (orientation: landscape) {
+    .character#ded,
+    .character#baba,
+    .character#baba_smile {
+        width: 18% !important;
+        max-width: 120px !important;
+    }
+    
+    .character#zayac,
+    .character#volk,
+    .character#medved,
+    .character#lisa {
+        width: 18% !important;
+        max-width: 100px !important;
+    }
+    
+    .character#kolobok_dialog,
+    .character#kolobok_final,
+    .character#kolobok_meet,
+    .character#kolobok_quiz {
+        width: 15% !important;
+        max-width: 80px !important;
+    }
+}
+
+/* Очень маленькие телефоны (до 380px) */
+@media (max-width: 380px) {
+    .character#ded,
+    .character#baba,
+    .character#baba_smile {
+        width: 30% !important;
+        min-width: 70px !important;
+    }
+    
+    .character#zayac,
+    .character#volk,
+    .character#medved,
+    .character#lisa {
+        width: 28% !important;
+        min-width: 65px !important;
+    }
 }
