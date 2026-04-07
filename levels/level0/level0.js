@@ -189,6 +189,16 @@ if (soundToggleBtn) {
     document.addEventListener('click', tryAutoPlay);
 }
         this.executeIzbaStep();
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                // Перерисовываем текущий шаг при повороте
+                if (this.currentPart === 0) {
+                    this.executeIzbaStep();
+                } else {
+                    this.executePathStep();
+                }
+            }, 100);
+        });
     },
     
     getDefaultDialogues: function() {
@@ -312,34 +322,34 @@ if (soundToggleBtn) {
     },
     
     addCharacter: function(characterKey, customPosition = null) {
-    // Загружаем данные персонажа из JSON
-        const charData = this.charactersConfig[characterKey];
-        if (!charData) {
-            console.error('Персонаж не найден:', characterKey);
-            return null;
-        }
-        
-        const char = document.createElement('div');
-        char.className = 'character';
-        char.id = charData.id;
-        char.style.position = 'absolute';
-        char.style.left = customPosition ? customPosition.left : charData.left;
-        char.style.bottom = customPosition ? customPosition.bottom : charData.bottom;
-        char.style.width = customPosition ? customPosition.width : charData.width;
-        char.style.height = customPosition ? customPosition.height : charData.height;
-        char.style.backgroundImage = `url('${charData.image}')`;
-        char.style.backgroundSize = 'contain';
-        char.style.backgroundRepeat = 'no-repeat';
-        char.style.backgroundPosition = 'bottom';
-        char.style.zIndex = charData.zIndex || 10;
-        char.style.opacity = '0';
-        char.style.transition = 'opacity 0.3s ease';
-        
-        this.charactersLayer.appendChild(char);
-        
-        setTimeout(() => { char.style.opacity = '1'; }, 10);
-        return char;
-    },
+    const charData = this.charactersConfig[characterKey];
+    if (!charData) {
+        console.error('Персонаж не найден:', characterKey);
+        return null;
+    }
+    
+    const char = document.createElement('div');
+    char.className = 'character';
+    char.id = charData.id;
+    char.style.position = 'absolute';
+    char.style.left = customPosition ? customPosition.left : charData.left;
+    char.style.bottom = customPosition ? customPosition.bottom : charData.bottom;
+    char.style.width = customPosition ? customPosition.width : charData.width;
+    char.style.height = customPosition ? customPosition.height : charData.height;
+    char.style.minWidth = charData.minWidth || '50px';
+    char.style.maxWidth = charData.maxWidth || '150px';
+    char.style.backgroundImage = `url('${charData.image}')`;
+    char.style.backgroundSize = 'contain';
+    char.style.backgroundRepeat = 'no-repeat';
+    char.style.backgroundPosition = 'bottom';
+    char.style.zIndex = charData.zIndex || 10;
+    char.style.opacity = '0';
+    char.style.transition = 'opacity 0.3s ease';
+    
+    this.charactersLayer.appendChild(char);
+    setTimeout(() => { char.style.opacity = '1'; }, 10);
+    return char;
+},
     
     removeCharacter: function(id, callback) {
         const char = document.getElementById(id);
@@ -534,13 +544,13 @@ if (soundToggleBtn) {
     },
     
     createClickZones: function() {
-        this.clickzonesLayer.innerHTML = '';
-        this.clickZones = [];
+        const isMobile = window.innerWidth <= 768;
+        const zoneSize = isMobile ? '70px' : '100px';
         
         const zones = [
-            { id: 'zone1', left: '15%', top: '50%', width: '100px', height: '100px', img: 'flour_1.png' },
-            { id: 'zone2', left: '45%', top: '60%', width: '100px', height: '100px', img: 'flour_2.png' },
-            { id: 'zone3', left: '75%', top: '45%', width: '100px', height: '100px', img: 'flour_3.png' }
+            { id: 'zone1', left: '15%', top: '50%', width: zoneSize, height: zoneSize, img: 'flour_1.png' },
+            { id: 'zone2', left: '45%', top: '60%', width: zoneSize, height: zoneSize, img: 'flour_2.png' },
+            { id: 'zone3', left: '75%', top: '45%', width: zoneSize, height: zoneSize, img: 'flour_3.png' }
         ];
         
         zones.forEach(zone => {
@@ -604,22 +614,24 @@ if (soundToggleBtn) {
         const kneadBtn = document.createElement('button');
         kneadBtn.className = 'action-btn';
         kneadBtn.innerText = '🍞 Слепить колобка';
+        const isMobile = window.innerWidth <= 768;
         kneadBtn.style.cssText = `
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            padding: 14px 32px;
-            font-size: 1.2rem;
-            background-color: #f0c674;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #a57c3c;
-            font-weight: bold;
-            color: #2c2c2c;
-        `;
+        position: fixed;
+        bottom: ${isMobile ? '20px' : '40px'};
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        padding: ${isMobile ? '8px 20px' : '14px 32px'};
+        font-size: ${isMobile ? '0.9rem' : '1.2rem'};
+        background-color: #f0c674;
+        border: none;
+        border-radius: 60px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #a57c3c;
+        font-weight: bold;
+        color: #2c2c2c;
+        white-space: nowrap;
+    `;
         
         kneadBtn.onclick = () => {
             kneadBtn.remove();
@@ -640,22 +652,24 @@ if (soundToggleBtn) {
         const continueBtn = document.createElement('button');
         continueBtn.className = 'action-btn';
         continueBtn.innerText = 'Продолжить ➡';
+        const isMobile = window.innerWidth <= 768;
         continueBtn.style.cssText = `
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            padding: 14px 32px;
-            font-size: 1.2rem;
-            background-color: #f0c674;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #a57c3c;
-            font-weight: bold;
-            color: #2c2c2c;
-        `;
+        position: fixed;
+        bottom: ${isMobile ? '20px' : '40px'};
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        padding: ${isMobile ? '8px 20px' : '14px 32px'};
+        font-size: ${isMobile ? '0.9rem' : '1.2rem'};
+        background-color: #f0c674;
+        border: none;
+        border-radius: 60px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #a57c3c;
+        font-weight: bold;
+        color: #2c2c2c;
+        white-space: nowrap;
+    `;
         
         continueBtn.onclick = () => {
             this.hideVideo();
@@ -732,22 +746,24 @@ if (soundToggleBtn) {
         const continueBtn = document.createElement('button');
         continueBtn.className = 'action-btn';
         continueBtn.innerText = 'Продолжить ➡';
+        const isMobile = window.innerWidth <= 768;
         continueBtn.style.cssText = `
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            padding: 14px 32px;
-            font-size: 1.2rem;
-            background-color: #f0c674;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #a57c3c;
-            font-weight: bold;
-            color: #2c2c2c;
-        `;
+        position: fixed;
+        bottom: ${isMobile ? '20px' : '40px'};
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        padding: ${isMobile ? '8px 20px' : '14px 32px'};
+        font-size: ${isMobile ? '0.9rem' : '1.2rem'};
+        background-color: #f0c674;
+        border: none;
+        border-radius: 60px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #a57c3c;
+        font-weight: bold;
+        color: #2c2c2c;
+        white-space: nowrap;
+    `;
         
         continueBtn.onclick = () => {
             this.hideVideo();
@@ -783,22 +799,24 @@ if (soundToggleBtn) {
             const goBtn = document.createElement('button');
             goBtn.className = 'action-btn';
             goBtn.innerText = '🚀 В путь!';
-            goBtn.style.cssText = `
-                position: fixed;
-                bottom: 40px;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 100;
-                padding: 14px 32px;
-                font-size: 1.2rem;
-                background-color: #f0c674;
-                border: none;
-                border-radius: 60px;
-                cursor: pointer;
-                box-shadow: 0 4px 0 #a57c3c;
-                font-weight: bold;
-                color: #2c2c2c;
-            `;
+            const isMobile = window.innerWidth <= 768;
+        goBtn.style.cssText = `
+            position: fixed;
+            bottom: ${isMobile ? '20px' : '40px'};
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            padding: ${isMobile ? '8px 20px' : '14px 32px'};
+            font-size: ${isMobile ? '0.9rem' : '1.2rem'};
+            background-color: #f0c674;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a57c3c;
+            font-weight: bold;
+            color: #2c2c2c;
+            white-space: nowrap;
+        `;
             
             goBtn.onclick = () => {
                 goBtn.remove();

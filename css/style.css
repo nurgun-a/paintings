@@ -314,3 +314,260 @@ body {
 .background-layer.secondary {
     z-index: 0;
 }
+/* ========== АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ УСТРОЙСТВА ДЛЯ 0-го УРОВНЯ ========== */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+    /* Диалоговое окно */
+    .dialog-container {
+        width: 90%;
+        bottom: 10px;
+        padding: 12px 16px;
+    }
+    
+    .dialog-bubble {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .dialog-next-btn {
+        padding: 6px 18px;
+        font-size: 0.85rem;
+    }
+    
+    /* Кнопки действий */
+    .action-btn {
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        bottom: 30px;
+    }
+    
+    /* Счётчик заданий */
+    .quest-counter {
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    /* Персонажи (уменьшаем для планшетов) */
+    .character {
+        transform: scale(0.85);
+        transform-origin: bottom;
+    }
+    
+    /* Кликабельные зоны сбора муки */
+    .clickzone {
+        transform: scale(0.85);
+    }
+}
+
+/* Мобильные телефоны (до 768px) */
+@media (max-width: 768px) {
+    .game-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border-width: 1px;
+    }
+    
+    /* Диалоговое окно */
+    .dialog-container {
+        width: 95%;
+        bottom: 5px;
+        padding: 8px 12px;
+    }
+    
+    .dialog-bubble {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .dialog-next-btn {
+        padding: 5px 16px;
+        font-size: 0.8rem;
+    }
+    
+    /* Кнопки действий */
+    .action-buttons {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    .action-btn {
+        padding: 6px 16px;
+        font-size: 0.8rem;
+    }
+    
+    /* Счётчики */
+    .quest-counter,
+    .progress-counter {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+    
+    /* Кнопка сброса прогресса */
+    .reset-btn,
+    #resetProgressBtn {
+        bottom: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        font-size: 0.6rem;
+    }
+    
+    /* Кнопка звука */
+    #soundToggleBtn {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 0.7rem;
+    }
+    
+    /* Персонажи (уменьшаем для телефонов) */
+    .character {
+        transform: scale(0.7);
+        transform-origin: bottom;
+    }
+    
+    /* Кликабельные зоны сбора муки */
+    .clickzone {
+        transform: scale(0.7);
+        transform-origin: center;
+    }
+    
+    /* Всплывающий текст (+1 мука) */
+    .floating-text {
+        font-size: 1rem;
+    }
+    
+    /* Видео слой */
+    #videoLayer video {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+/* Маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+    .dialog-bubble {
+        font-size: 0.75rem;
+    }
+    
+    .dialog-next-btn {
+        padding: 4px 14px;
+        font-size: 0.7rem;
+    }
+    
+    .action-btn {
+        padding: 5px 14px;
+        font-size: 0.7rem;
+    }
+    
+    .character {
+        transform: scale(0.55);
+    }
+    
+    .clickzone {
+        transform: scale(0.55);
+    }
+    
+    .quest-counter,
+    .progress-counter {
+        font-size: 0.6rem;
+        padding: 3px 8px;
+    }
+    
+    .checkmark {
+        font-size: 1rem !important;
+        top: -15px !important;
+    }
+}
+
+/* Альбомная ориентация на мобильных */
+@media (max-width: 900px) and (orientation: landscape) {
+    .game-container {
+        height: 100vh;
+    }
+    
+    .dialog-container {
+        bottom: 5px;
+        padding: 6px 12px;
+    }
+    
+    .dialog-bubble {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .character {
+        transform: scale(0.6);
+    }
+    
+    .clickzone {
+        transform: scale(0.6);
+    }
+}
+
+/* Адаптация для видео-переходов */
+@media (max-width: 768px) {
+    #videoLayer video {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+/* Увеличение кликабельных зон для пальцев */
+@media (max-width: 768px) {
+    .clickzone,
+    .house,
+    .portal,
+    .dialog-next-btn,
+    .action-btn,
+    #soundToggleBtn,
+    .reset-btn,
+    #resetProgressBtn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .clickzone {
+        background-size: 80% !important;
+    }
+}
+/* Для iPhone с вырезом */
+@supports (padding: max(0px)) {
+    .game-container {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .dialog-container {
+        bottom: max(5px, env(safe-area-inset-bottom));
+    }
+    
+    .action-buttons {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        right: max(10px, env(safe-area-inset-right));
+    }
+    
+    .quest-counter,
+    .progress-counter {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+    }
+    
+    #soundToggleBtn {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        right: max(10px, env(safe-area-inset-right));
+    }
+    
+    .reset-btn,
+    #resetProgressBtn {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        left: max(10px, env(safe-area-inset-left));
+    }
+}
