@@ -763,7 +763,7 @@ addHouseToLayer: function(id, position, imageUrl, onClick) {
             this.soundPortal.play().catch(e => console.log('Звук портала:', e));
         }
         this.playVideo('/levels/level1/assets/videos/portal_open.mp4', false, () => {
-            window.location.href = 'https://docs.yandex.ru/docs/view?url=ya-disk-public%3A%2F%2FT1M69HcuzC5z3LcSxPvPV1gUgpCb9YGmqm2TbHrocMGZUOU%2BA8tD11vNxfYuMo77q%2FJ6bpmRyOJonT3VoXnDag%3D%3D&name=Igs.pptx';
+            window.location.href = '/level2.html';
             //window.open('/igs.pptx', '_blank');
         });
     });
