@@ -618,28 +618,36 @@ addHouseToLayer: function(id, position, imageUrl, onClick) {
 },
     
     showQuestion: function() {
-        const question = this.currentScene.question;
-        
-        this.dialogText.innerText = question.text;
-        this.dialogContainer.style.display = 'flex';
-        
-        // Создаём варианты ответов
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'quiz-container';
-        optionsContainer.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            max-width: 600px;
-            background-color: rgba(0,0,0,0.85);
-            border-radius: 20px;
-            padding: 20px;
-            z-index: 200;
-        `;
-        
-        optionsContainer.innerHTML = question.options.map((opt, idx) => `
+    const question = this.currentScene.question;
+    
+    // Полностью скрываем диалоговое окно
+    this.dialogContainer.style.display = 'none';
+    
+    // Очищаем текст в диалоговом окне (на всякий случай)
+    this.dialogText.innerText = '';
+    
+    // Убираем обработчик с кнопки "Далее", чтобы не мешал
+    this.dialogNextBtn.onclick = null;
+    
+    // Создаём контейнер для вариантов ответов
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'quiz-container';
+    optionsContainer.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        max-width: 600px;
+        background-color: rgba(0,0,0,0.85);
+        border-radius: 20px;
+        padding: 20px;
+        z-index: 200;
+    `;
+    
+    optionsContainer.innerHTML = `
+        <div style="color: white; font-size: 1.2rem; margin-bottom: 20px;">${question.text}</div>
+        ${question.options.map((opt, idx) => `
             <button class="quiz-option" data-index="${idx}" style="
                 display: block;
                 width: 100%;
@@ -653,24 +661,25 @@ addHouseToLayer: function(id, position, imageUrl, onClick) {
                 text-align: left;
                 transition: transform 0.1s;
             ">${String.fromCharCode(65+idx)}. ${opt}</button>
-        `).join('');
-        
-        document.body.appendChild(optionsContainer);
-        
-        document.querySelectorAll('.quiz-option').forEach(btn => {
-            btn.addEventListener('mouseenter', () => {
-                btn.style.transform = 'scale(1.02)';
-            });
-            btn.addEventListener('mouseleave', () => {
-                btn.style.transform = 'scale(1)';
-            });
-            btn.addEventListener('click', (e) => {
-                const selectedIdx = parseInt(btn.getAttribute('data-index'));
-                optionsContainer.remove();
-                this.checkAnswer(selectedIdx);
-            });
+        `).join('')}
+    `;
+    
+    document.body.appendChild(optionsContainer);
+    
+    document.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'scale(1.02)';
         });
-    },
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'scale(1)';
+        });
+        btn.addEventListener('click', (e) => {
+            const selectedIdx = parseInt(btn.getAttribute('data-index'));
+            optionsContainer.remove();
+            this.checkAnswer(selectedIdx);
+        });
+    });
+},
     
     checkAnswer: function(selectedIdx) {
     const isCorrect = (selectedIdx === this.currentScene.question.correct);

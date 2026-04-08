@@ -549,7 +549,7 @@ if (soundToggleBtn) {
         
         const zones = [
             { id: 'zone1', left: '15%', top: '50%', width: zoneSize, height: zoneSize, img: 'flour_1.png' },
-            { id: 'zone2', left: '45%', top: '60%', width: zoneSize, height: zoneSize, img: 'flour_2.png' },
+            { id: 'zone2', left: '45%', top: '30%', width: zoneSize, height: zoneSize, img: 'flour_2.png' },
             { id: 'zone3', left: '75%', top: '45%', width: zoneSize, height: zoneSize, img: 'flour_3.png' }
         ];
         
