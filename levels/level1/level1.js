@@ -763,7 +763,8 @@ addHouseToLayer: function(id, position, imageUrl, onClick) {
             this.soundPortal.play().catch(e => console.log('Звук портала:', e));
         }
         this.playVideo('/levels/level1/assets/videos/portal_open.mp4', false, () => {
-            window.location.href = '/level2.html';
+            //window.location.href = '/igs.pptx';
+            window.open('/igs.ppts', '_blank');
         });
     });
     
