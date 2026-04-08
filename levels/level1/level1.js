@@ -764,7 +764,7 @@ addHouseToLayer: function(id, position, imageUrl, onClick) {
         }
         this.playVideo('/levels/level1/assets/videos/portal_open.mp4', false, () => {
             //window.location.href = '/igs.pptx';
-            window.open('/igs.ppts', '_blank');
+            window.open('/igs.pptx', '_blank');
         });
     });
     
