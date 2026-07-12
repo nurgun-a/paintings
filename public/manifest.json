@@ -1,26 +1,22 @@
 {
-  "short_name": "AI Quest",
-  "name": "AI Quest Platform Mobile",
-  "description": "Иммерсивные AI-Квесты с Ведущим в реальном мире",
+  "short_name": "CityQuest",
+  "name": "City Quest - Тайны Старого Города",
+  "description": "Мобильный городской квест-платформа с загадками, GPS-ориентированием и ИИ-помощником.",
   "icons": [
     {
-      "src": "https://img.icons8.com/isometric/512/compass.png",
+      "src": "images/icon-192.png",
       "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "sizes": "192x192"
     },
     {
-      "src": "https://img.icons8.com/isometric/192/compass.png",
+      "src": "images/icon-512.png",
       "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
+      "sizes": "512x512"
     }
   ],
   "start_url": "/",
   "background_color": "#090d16",
-  "theme_color": "#6366f1",
+  "theme_color": "#4f46e5",
   "display": "standalone",
-  "orientation": "portrait",
-  "dir": "ltr",
-  "lang": "ru-RU"
+  "orientation": "portrait"
 }
