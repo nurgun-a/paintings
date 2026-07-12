@@ -48,7 +48,7 @@ export const ChatView: React.FC = () => {
             <Compass className="w-5 h-5 animate-spin-slow" />
           </div>
           <div>
-            <h2 className="text-xs font-bold text-slate-900 dark:text-white font-sans">Хранитель Тайн</h2>
+            <h2 className="text-xs font-bold text-slate-900 dark:text-white font-sans">Сказитель Олонхо</h2>
             <p className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> В сети • Помощник ИИ
             </p>
@@ -131,7 +131,7 @@ export const ChatView: React.FC = () => {
                 <span className="w-1.5 h-1.5 bg-cyan-500 dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                 <span className="w-1.5 h-1.5 bg-cyan-500 dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">Хранитель записывает руны...</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">Сказитель напевает строки Олонхо...</span>
             </div>
           </div>
         )}
@@ -145,7 +145,7 @@ export const ChatView: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isChatLoading}
-          placeholder="Спросить подсказку у Хранителя..."
+          placeholder="Спросить подсказку у Сказителя Олонхо..."
           className="flex-1 px-4 py-2.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 rounded-xl outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:ring-2 focus:ring-cyan-500/40 transition-all"
         />
         <button

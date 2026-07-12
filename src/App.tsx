@@ -74,10 +74,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
             <div>
               <h1 className="text-sm font-extrabold font-sans tracking-tight text-slate-900 dark:text-white">
-                Тайны Старого Города
+                Ньургун Стремительный
               </h1>
               <p className="text-[9px] text-cyan-600 dark:text-cyan-400/80 font-mono tracking-wider uppercase font-bold">
-                Городской Квест-Платформа
+                Якутский квест-олонхо
               </p>
             </div>
           </div>

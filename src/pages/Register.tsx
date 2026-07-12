@@ -75,8 +75,8 @@ export const Register: React.FC = () => {
               <Compass className="w-8 h-8 animate-spin-slow" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold font-display tracking-tight text-white">Тайны Старого Города</h1>
-          <p className="text-cyan-400/90 text-sm mt-1 font-medium font-sans">Регистрация в системе искателей</p>
+          <h1 className="text-2xl font-bold font-display tracking-tight text-white">Ньургун Стремительный</h1>
+          <p className="text-cyan-400/90 text-sm mt-1 font-medium font-sans">Регистрация в системе богатырей Айыы</p>
         </div>
 
         {/* Form */}

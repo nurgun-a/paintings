@@ -1,6 +1,6 @@
 {
-  "name": "City Quest Platform",
-  "description": "A mobile web platform (PWA) for playing an interactive city quest with riddles, photos, coordinates checking, and AI assistant clues.",
+  "name": "Olonkho Quest Platform",
+  "description": "Интерактивная мобильная квест-платформа (PWA) по мотивам якутского героического эпоса Олонхо «Ньургун Стремительный» с загадками, фотоподтверждениями, проверкой геолокации и мудрыми подсказками ИИ-Сказителя.",
   "requestFramePermissions": ["camera", "microphone", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

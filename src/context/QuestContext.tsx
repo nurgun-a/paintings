@@ -85,7 +85,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const welcomeMsg: ChatMessage = {
             id: 'welcome',
             sender: 'ai',
-            text: 'Приветствую тебя, отважный исследователь! Я — Хранитель Тайн. Буду сопровождать тебя на пути к разгадке Тайн Старого Города. Задавай мне любые вопросы — я могу дать тебе ценные подсказки к любому заданию, но ответ тебе придется найти самостоятельно!',
+            text: 'Приветствую тебя, славный богатырь! Я — твой Сказитель Олонхо (Олонхосут). Я буду вести тебя сквозь три великих мира якутского эпоса «Ньургун Стремительный». Задавай мне любые вопросы — я могу рассказать древние предания и дать тебе мудрые наводящие подсказки к испытаниям, но разгадать тайны и спасти Туйаарыму Куо тебе предстоит своими силами!',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
           setChatMessages([welcomeMsg]);
@@ -250,7 +250,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const welcomeMsg: ChatMessage = {
       id: `welcome-${Date.now()}`,
       sender: 'ai',
-      text: 'Прогресс квеста сброшен. Тайны Старого Города снова ждут тебя! Чем я могу помочь тебе на первом этапе?',
+      text: 'Путь Олонхо очищен от былых следов. Древние предания о Ньургуне Стремительном снова ждут тебя! С какого испытания начнем наше великое сказание?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setChatMessages([welcomeMsg]);

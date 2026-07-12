@@ -43,12 +43,12 @@ export const FinishView: React.FC = () => {
   };
 
   const handleShare = () => {
-    const reportText = `🏆 Я прошел городской квест "Тайны Старого Города"!
-👤 Исследователь: ${profile?.firstName} (@${profile?.username})
-⏱️ Время прохождения: ${getDurationString()}
-🎒 Всего пройдено этапов: ${completedCount} из ${totalTasks}
+    const reportText = `🏆 Я прошел интерактивный квест-эпос Олонхо "Ньургун Стремительный"!
+👤 Богатырь Айыы: ${profile?.firstName} (@${profile?.username})
+⏱️ Время прохождения пути: ${getDurationString()}
+🎒 Всего преодолено испытаний трех миров: ${completedCount} из ${totalTasks}
 
-Присоединяйтесь к приключениям!`;
+Испытайте силу богатырского духа и вы!`;
 
     navigator.clipboard.writeText(reportText).then(() => {
       setCopied(true);
@@ -81,7 +81,7 @@ export const FinishView: React.FC = () => {
 
         <h1 className="text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white">Поздравляем!</h1>
         <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 max-w-md mx-auto leading-relaxed">
-          Вы успешно разгадали все древние коды и полностью прошли квест «Тайны Старого Города»!
+          Вы успешно прошли все испытания трех миров, спасли красавицу Туйаарыму Куо и полностью одолели силы зла в квесте «Ньургун Стремительный»!
         </p>
 
         {/* Stats card inside header */}
