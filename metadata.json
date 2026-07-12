@@ -1,0 +1,11 @@
+{
+  "name": "AI Quest Platform",
+  "description": "Production-ready real-world AI quest platform featuring a modular server-side gamemaster engine, mobile-responsive PWA client with camera support, live organizer events, and AI Vision photo verification.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

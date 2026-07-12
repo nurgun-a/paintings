@@ -1,0 +1,292 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PLAYER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum StepType {
+  TEXT
+  QR
+  PHOTO
+  LOCATION
+  CUSTOM
+  TIMER
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  email        String        @unique
+  passwordHash String
+  username     String        @unique
+  role         Role          @default(PLAYER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+  
+  // Relations
+  player       Player?
+  admin        Admin?
+  sessions     Session[]
+  logs         Log[]
+}
+
+model Admin {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @unique @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  projects  Project[]
+}
+
+model Project {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  status      String    @default("draft") // draft, published, stopped
+  adminId     String    @db.Uuid
+  admin       Admin     @relation(fields: [adminId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  settings     ProjectSettings?
+  contexts     ProjectContext[]
+  npcs         NPC[]
+  quests       Quest[]
+  liveEvents   LiveEvent[]
+  apiKeys      ApiKey[]
+}
+
+model ProjectSettings {
+  id             String    @id @default(uuid()) @db.Uuid
+  projectId      String    @unique @db.Uuid
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  maxPlayers     Int       @default(100)
+  enablePush     Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+}
+
+model ProjectContext {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  content     String    @db.Text // Markdown, JSON, or Raw TXT lore
+  contentType String    @default("markdown") // markdown, txt, json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model NPC {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  role        String
+  personality String    @db.Text
+  avatar      String    @default("🧙‍♂️")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Quest {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  steps       QuestStep[]
+}
+
+model QuestStep {
+  id          String    @id @default(uuid()) @db.Uuid
+  questId     String    @db.Uuid
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  type        StepType  @default(TEXT)
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  conditions  QuestCondition[]
+  rewards     QuestReward[]
+}
+
+model QuestCondition {
+  id               String    @id @default(uuid()) @db.Uuid
+  stepId           String    @db.Uuid
+  step             QuestStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  expectedValue    String    @db.Text // Expected QR, text answer or photo description
+  locationLat      Float?
+  locationLng      Float?
+  locationRadius   Float?    // Radius accuracy in meters
+  timerDuration    Int?      // Duration for countdowns (seconds)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+}
+
+model QuestReward {
+  id          String    @id @default(uuid()) @db.Uuid
+  stepId      String    @db.Uuid
+  step        QuestStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  xp          Int       @default(100)
+  item        String?
+  achievement String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model LiveEvent {
+  id               String    @id @default(uuid()) @db.Uuid
+  projectId        String    @db.Uuid
+  project          Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title            String
+  description      String    @db.Text
+  type             StepType  @default(TEXT)
+  verificationData String    @db.Text // JSON string representation of target values
+  xpReward         Int       @default(150)
+  itemReward       String?
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+}
+
+model Player {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @unique @db.Uuid
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level        Int       @default(1)
+  xp           Int       @default(0)
+  rank         String    @default("Новичок")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  // Relations
+  progress     PlayerProgress[]
+  inventory    PlayerInventory[]
+  achievements PlayerAchievement[]
+  histories    PlayerHistory[]
+  messages     PlayerMessage[]
+  subscriptions PushSubscription[]
+}
+
+model PlayerProgress {
+  id               String    @id @default(uuid()) @db.Uuid
+  playerId         String    @db.Uuid
+  player           Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  questProjectId   String    @db.Uuid
+  currentStepIndex Int       @default(0)
+  completed        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+}
+
+model PlayerInventory {
+  id        String    @id @default(uuid()) @db.Uuid
+  playerId  String    @db.Uuid
+  player    Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  item      String
+  quantity  Int       @default(1)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model PlayerAchievement {
+  id          String    @id @default(uuid()) @db.Uuid
+  playerId    String    @db.Uuid
+  player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  achievement String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model PlayerHistory {
+  id         String    @id @default(uuid()) @db.Uuid
+  playerId   String    @db.Uuid
+  player     Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  actionType String    // JOIN_QUEST, VERIFY_STEP, COMPLETE_QUEST, CLAIM_REWARD
+  details    String    @db.Text
+  createdAt  DateTime  @default(now())
+}
+
+model PlayerMessage {
+  id         String    @id @default(uuid()) @db.Uuid
+  playerId   String    @db.Uuid
+  player     Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sender     String    // player, gamemaster, system
+  text       String    @db.Text
+  imageUrl   String?   @db.Text
+  timestamp  DateTime  @default(now())
+}
+
+model Session {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String    @unique @db.Text
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+}
+
+model ApiKey {
+  id        String    @id @default(uuid()) @db.Uuid
+  projectId String    @db.Uuid
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  key       String    @unique
+  createdAt DateTime  @default(now())
+}
+
+model PushSubscription {
+  id        String    @id @default(uuid()) @db.Uuid
+  playerId  String    @db.Uuid
+  player    Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  endpoint  String    @db.Text
+  keysAuth  String
+  keysP256dh String
+  createdAt DateTime  @default(now())
+}
+
+model Log {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String?   @db.Uuid
+  user      User?     @relation(fields: [userId], references: [id])
+  level     String    @default("INFO") // INFO, WARN, ERROR, DEBUG
+  category  String    @default("SYSTEM") // AI, API, WS, AUTH
+  message   String    @db.Text
+  createdAt DateTime  @default(now())
+}
