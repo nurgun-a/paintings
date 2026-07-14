@@ -2,9 +2,6 @@ const CACHE_NAME = 'city-quest-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/src/main.tsx',
-  '/src/App.tsx',
-  '/src/index.css',
   '/data/quest.json',
   '/manifest.json'
 ];
@@ -34,6 +31,11 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  // Only intercept GET requests from http/https schemes
+  if (e.request.method !== 'GET' || !e.request.url.startsWith('http')) {
+    return;
+  }
+
   // Let API requests bypass the service worker cache
   if (e.request.url.includes('/api/')) {
     return;

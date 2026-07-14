@@ -1,6 +1,100 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PlayerProfile, QuestProgress, QuestTask, ChatMessage } from '../types';
 
+export interface CustomConfig {
+  questName: string;
+  backgrounds: {
+    mainBackgroundUrl: string;
+    mainBackgroundFallback: string;
+    sargeWoodColorLight: string;
+    sargeWoodColorMedium: string;
+    sargeWoodColorDark: string;
+    trailPrimaryColor: string;
+    trailDottedColor: string;
+  };
+  customImages: {
+    sargeActiveImage: string;
+    sargeCompletedImage: string;
+    sargeLockedImage: string;
+    generalSargeImage: string;
+  };
+  customIcons: {
+    active: string;
+    completed: string;
+    locked: string;
+  };
+}
+
+export interface AccentColorPalette {
+  id: string;
+  name: string;
+  description: string;
+  colors: {
+    '400': string;
+    '500': string;
+    '550': string;
+    '600': string;
+  };
+}
+
+export const ACCENT_PALETTES: AccentColorPalette[] = [
+  {
+    id: 'wood',
+    name: 'Берестяной покой (Коричневый)',
+    description: 'Древесно-коричневые тона древней березы, священных Сэргэ и якутской тайги.',
+    colors: {
+      '400': '#c27a3f', // Light copper/leather
+      '500': '#a35c27', // Warm Amber/Brown
+      '550': '#874618', // Deep wood
+      '600': '#6e350f', // Dark bark wood
+    }
+  },
+  {
+    id: 'amber',
+    name: 'Золото Айыы (Янтарный)',
+    description: 'Благословенный свет Верхнего Мира, тепло очага и сияние золота Саха.',
+    colors: {
+      '400': '#f59e0b', // Amber 500
+      '500': '#d97706', // Amber 600
+      '550': '#b45309', // Amber 700
+      '600': '#78350f', // Amber 900
+    }
+  },
+  {
+    id: 'terracotta',
+    name: 'Огонь очага (Терракотовый)',
+    description: 'Глиняные предания, тепло костра под созвездиями и отвага богатырей.',
+    colors: {
+      '400': '#fb923c', // Orange 400
+      '500': '#ea580c', // Orange 600
+      '550': '#c2410c', // Orange 700
+      '600': '#9a3412', // Orange 900
+    }
+  },
+  {
+    id: 'forest',
+    name: 'Шёпот тайги (Зеленый)',
+    description: 'Мудрость древних кедров, благословение Иччи и вечнозеленая сила природы Саха.',
+    colors: {
+      '400': '#4ade80', // Green 400
+      '500': '#16a34a', // Green 600
+      '550': '#15803d', // Green 700
+      '600': '#166534', // Green 800
+    }
+  },
+  {
+    id: 'sky',
+    name: 'Ледяной Ленский (Синий)',
+    description: 'Холодная сила реки Лены, дыхание зимней стужи и чистое небо над Якутией.',
+    colors: {
+      '400': '#22d3ee', // Cyan 400
+      '500': '#0891b2', // Cyan 600
+      '550': '#0369a1', // Sky 700
+      '600': '#0e7490', // Cyan 800
+    }
+  }
+];
+
 interface QuestContextType {
   profile: PlayerProfile | null;
   progress: QuestProgress;
@@ -17,9 +111,15 @@ interface QuestContextType {
   completeTask: (taskId: number, answer?: string, mediaData?: { photo?: string; audio?: string; video?: string }) => void;
   resetQuest: () => void;
   sendChatMessage: (text: string) => Promise<void>;
+  triggerSpiritGreeting: (hiddenPrompt: string) => Promise<void>;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   isChatLoading: boolean;
+  activatedTaskId: number | null;
+  setActivatedTaskId: (id: number | null) => void;
+  customConfig: CustomConfig | null;
+  accentColor: string;
+  setAccentColor: (color: string) => void;
 }
 
 const QuestContext = createContext<QuestContextType | undefined>(undefined);
@@ -33,6 +133,64 @@ const DEFAULT_PROGRESS: QuestProgress = {
   videos: {}
 };
 
+const safeSaveToLocalStorage = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn(`Failed to save to localStorage for key "${key}":`, e);
+    // If it's progress, prune heavy media strings
+    if (key === 'quest_progress') {
+      try {
+        const parsed = JSON.parse(value);
+        const prunedPhotos = { ...parsed.photos };
+        const prunedAudios = { ...parsed.audios };
+        const prunedVideos = { ...parsed.videos };
+
+        Object.keys(prunedPhotos).forEach(k => {
+          const numKey = Number(k);
+          if (prunedPhotos[numKey] && prunedPhotos[numKey].length > 10000) {
+            prunedPhotos[numKey] = "[Фото сохранено в памяти сессии, но не в кэше браузера из-за ограничений размера]";
+          }
+        });
+        Object.keys(prunedAudios).forEach(k => {
+          const numKey = Number(k);
+          if (prunedAudios[numKey] && prunedAudios[numKey].length > 10000) {
+            prunedAudios[numKey] = "[Аудио сохранено в памяти сессии, но не в кэше браузера из-за ограничений размера]";
+          }
+        });
+        Object.keys(prunedVideos).forEach(k => {
+          const numKey = Number(k);
+          if (prunedVideos[numKey] && prunedVideos[numKey].length > 10000) {
+            prunedVideos[numKey] = "[Видео сохранено в памяти сессии, но не в кэше браузера из-за ограничений размера]";
+          }
+        });
+
+        const prunedProgress = {
+          ...parsed,
+          photos: prunedPhotos,
+          audios: prunedAudios,
+          videos: prunedVideos
+        };
+        localStorage.setItem(key, JSON.stringify(prunedProgress));
+        console.log(`Successfully saved pruned version of quest_progress to localStorage.`);
+      } catch (innerError) {
+        console.error('Failed to save even pruned progress to localStorage:', innerError);
+      }
+    } else if (key === 'quest_chat_history') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed) && parsed.length > 20) {
+          const trimmed = [parsed[0], ...parsed.slice(-15)]; // Keep welcome msg and last 15 messages
+          localStorage.setItem(key, JSON.stringify(trimmed));
+          console.log(`Successfully saved trimmed chat history to localStorage.`);
+        }
+      } catch (innerError) {
+        console.error('Failed to save trimmed chat history to localStorage:', innerError);
+      }
+    }
+  }
+};
+
 export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [progress, setProgress] = useState<QuestProgress>(DEFAULT_PROGRESS);
@@ -43,53 +201,109 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // elegant default is dark
   const [focusedTaskId, setFocusedTaskIdState] = useState<number>(1);
+  const [activatedTaskId, setActivatedTaskIdState] = useState<number | null>(null);
+  const [customConfig, setCustomConfig] = useState<CustomConfig | null>(null);
+  const [accentColor, setAccentColorState] = useState<string>(() => {
+    return localStorage.getItem('quest_accent_color') || 'wood';
+  });
+
+  const setAccentColor = (color: string) => {
+    setAccentColorState(color);
+    safeSaveToLocalStorage('quest_accent_color', color);
+  };
+
+  useEffect(() => {
+    const palette = ACCENT_PALETTES.find(p => p.id === accentColor) || ACCENT_PALETTES[0];
+    const root = document.documentElement;
+    root.style.setProperty('--color-brand-400', palette.colors['400']);
+    root.style.setProperty('--color-brand-500', palette.colors['500']);
+    root.style.setProperty('--color-brand-550', palette.colors['550']);
+    root.style.setProperty('--color-brand-600', palette.colors['600']);
+  }, [accentColor]);
+
+  const setActivatedTaskId = (id: number | null) => {
+    setActivatedTaskIdState(id);
+    if (id !== null) {
+      safeSaveToLocalStorage('quest_activated_task_id', id.toString());
+    } else {
+      localStorage.removeItem('quest_activated_task_id');
+    }
+  };
 
   const setFocusedTaskId = (id: number) => {
     setFocusedTaskIdState(id);
-    localStorage.setItem('quest_focused_task_id', id.toString());
+    safeSaveToLocalStorage('quest_focused_task_id', id.toString());
   };
 
   // Initialize and load from LocalStorage
   useEffect(() => {
     const initData = async () => {
       try {
-        // Load profile
-        const storedProfile = localStorage.getItem('quest_player_profile');
-        if (storedProfile) {
-          setProfile(JSON.parse(storedProfile));
+        // Load profile safely
+        try {
+          const storedProfile = localStorage.getItem('quest_player_profile');
+          if (storedProfile) {
+            setProfile(JSON.parse(storedProfile));
+          }
+        } catch (e) {
+          console.warn('Failed to parse quest_player_profile from localStorage', e);
+          localStorage.removeItem('quest_player_profile');
         }
 
-        // Load progress
-        const storedProgress = localStorage.getItem('quest_progress');
-        if (storedProgress) {
-          const parsed = JSON.parse(storedProgress);
-          setProgress(parsed);
-          
-          // Set focused task from saved state, fallback to current incomplete task
-          const storedFocusedId = localStorage.getItem('quest_focused_task_id');
-          if (storedFocusedId) {
-            setFocusedTaskIdState(parseInt(storedFocusedId, 10));
+        // Load progress safely
+        try {
+          const storedProgress = localStorage.getItem('quest_progress');
+          if (storedProgress) {
+            const parsed = JSON.parse(storedProgress);
+            const mergedProgress = {
+              ...DEFAULT_PROGRESS,
+              ...parsed,
+              completedTaskIds: parsed?.completedTaskIds || [],
+              answers: parsed?.answers || {},
+              photos: parsed?.photos || {},
+              audios: parsed?.audios || {},
+              videos: parsed?.videos || {}
+            };
+            setProgress(mergedProgress);
+            
+            // Set focused task from saved state, fallback to current incomplete task
+            const storedFocusedId = localStorage.getItem('quest_focused_task_id');
+            if (storedFocusedId) {
+              setFocusedTaskIdState(parseInt(storedFocusedId, 10));
+            } else {
+              setFocusedTaskIdState(mergedProgress.currentTaskId || 1);
+            }
           } else {
-            setFocusedTaskIdState(parsed.currentTaskId || 1);
+            setFocusedTaskIdState(1);
           }
-        } else {
+        } catch (e) {
+          console.warn('Failed to parse quest_progress from localStorage', e);
+          localStorage.removeItem('quest_progress');
+          localStorage.removeItem('quest_focused_task_id');
+          setProgress(DEFAULT_PROGRESS);
           setFocusedTaskIdState(1);
         }
 
-        // Load chat history
-        const storedChat = localStorage.getItem('quest_chat_history');
-        if (storedChat) {
-          setChatMessages(JSON.parse(storedChat));
-        } else {
-          // Welcome message from AI Guardian
-          const welcomeMsg: ChatMessage = {
-            id: 'welcome',
-            sender: 'ai',
-            text: 'Приветствую тебя, славный богатырь! Я — твой Сказитель Олонхо (Олонхосут). Я буду вести тебя сквозь три великих мира якутского эпоса «Ньургун Стремительный». Задавай мне любые вопросы — я могу рассказать древние предания и дать тебе мудрые наводящие подсказки к испытаниям, но разгадать тайны и спасти Туйаарыму Куо тебе предстоит своими силами!',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
+        // Load chat history safely
+        const welcomeMsg: ChatMessage = {
+          id: 'welcome',
+          sender: 'ai',
+          text: 'Приветствую тебя, славный богатырь! Я — твой Сказитель Олонхо (Олонхосут). Я буду вести тебя сквозь три великих мира якутского эпоса «Ньургун Стремительный». Задавай мне любые вопросы — я могу рассказать древние предания и дать тебе мудрые наводящие подсказки к испытаниям, но разгадать тайны и спасти Туйаарыму Куо тебе предстоит своими силами!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        try {
+          const storedChat = localStorage.getItem('quest_chat_history');
+          if (storedChat) {
+            setChatMessages(JSON.parse(storedChat));
+          } else {
+            setChatMessages([welcomeMsg]);
+            safeSaveToLocalStorage('quest_chat_history', JSON.stringify([welcomeMsg]));
+          }
+        } catch (e) {
+          console.warn('Failed to parse quest_chat_history from localStorage', e);
           setChatMessages([welcomeMsg]);
-          localStorage.setItem('quest_chat_history', JSON.stringify([welcomeMsg]));
+          safeSaveToLocalStorage('quest_chat_history', JSON.stringify([welcomeMsg]));
         }
 
         // Load theme
@@ -99,6 +313,26 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           document.documentElement.classList.toggle('dark', storedTheme === 'dark');
         } else {
           document.documentElement.classList.add('dark');
+        }
+
+        // Load activatedTaskId
+        const storedActivatedId = localStorage.getItem('quest_activated_task_id');
+        if (storedActivatedId) {
+          setActivatedTaskIdState(parseInt(storedActivatedId, 10));
+        } else {
+          setActivatedTaskIdState(1); // Default to task 1
+          safeSaveToLocalStorage('quest_activated_task_id', '1');
+        }
+
+        // Load custom_config.json
+        try {
+          const configRes = await fetch('/data/custom_config.json');
+          if (configRes.ok) {
+            const configData = await configRes.json();
+            setCustomConfig(configData);
+          }
+        } catch (e) {
+          console.warn('Failed to load custom config from /data/custom_config.json, using defaults', e);
         }
 
         // Load quest configurations from JSON
@@ -123,12 +357,12 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const registerPlayer = (newProfile: Omit<PlayerProfile, 'registered'>) => {
     const p: PlayerProfile = { ...newProfile, registered: true };
     setProfile(p);
-    localStorage.setItem('quest_player_profile', JSON.stringify(p));
+    safeSaveToLocalStorage('quest_player_profile', JSON.stringify(p));
   };
 
   const updateProfile = (updated: PlayerProfile) => {
     setProfile(updated);
-    localStorage.setItem('quest_player_profile', JSON.stringify(updated));
+    safeSaveToLocalStorage('quest_player_profile', JSON.stringify(updated));
   };
 
   const currentTask = tasks.find(t => t.id === progress.currentTaskId);
@@ -193,13 +427,17 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         startedAt: prev.startedAt || new Date().toISOString()
       };
 
-      localStorage.setItem('quest_progress', JSON.stringify(newProgress));
+      safeSaveToLocalStorage('quest_progress', JSON.stringify(newProgress));
+
+      // Clear activated task so user can activate the next one when they want
+      setActivatedTaskIdState(null);
+      localStorage.removeItem('quest_activated_task_id');
 
       // Automatically select the next uncompleted task as the focus task
       const firstUncompleted = tasks.find(t => !updatedCompleted.includes(t.id));
       if (firstUncompleted) {
         setFocusedTaskIdState(firstUncompleted.id);
-        localStorage.setItem('quest_focused_task_id', firstUncompleted.id.toString());
+        safeSaveToLocalStorage('quest_focused_task_id', firstUncompleted.id.toString());
       }
 
       // Send confirmation in Chat from AI Guardian
@@ -216,7 +454,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
         setChatMessages(c => {
           const nextChats = [...c, confirmMsg];
-          localStorage.setItem('quest_chat_history', JSON.stringify(nextChats));
+          safeSaveToLocalStorage('quest_chat_history', JSON.stringify(nextChats));
           return nextChats;
         });
       }, 500);
@@ -243,9 +481,11 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       videos: {}
     };
     setProgress(freshProgress);
-    localStorage.setItem('quest_progress', JSON.stringify(freshProgress));
+    safeSaveToLocalStorage('quest_progress', JSON.stringify(freshProgress));
     setFocusedTaskIdState(1);
-    localStorage.setItem('quest_focused_task_id', '1');
+    safeSaveToLocalStorage('quest_focused_task_id', '1');
+    setActivatedTaskIdState(1);
+    safeSaveToLocalStorage('quest_activated_task_id', '1');
 
     const welcomeMsg: ChatMessage = {
       id: `welcome-${Date.now()}`,
@@ -254,7 +494,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setChatMessages([welcomeMsg]);
-    localStorage.setItem('quest_chat_history', JSON.stringify([welcomeMsg]));
+    safeSaveToLocalStorage('quest_chat_history', JSON.stringify([welcomeMsg]));
   };
 
   // Chat with AI assistant
@@ -270,7 +510,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const updatedChats = [...chatMessages, userMsg];
     setChatMessages(updatedChats);
-    localStorage.setItem('quest_chat_history', JSON.stringify(updatedChats));
+    safeSaveToLocalStorage('quest_chat_history', JSON.stringify(updatedChats));
 
     // Auto-answering check for Riddle or QR codes in Chat
     const activeTask = tasks.find(t => t.id === focusedTaskId) || currentTask;
@@ -308,7 +548,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         },
         body: JSON.stringify({
           message: text,
-          history: updatedChats.slice(-8), // send last few messages for memory context
+          history: updatedChats.slice(-30), // send last 30 messages for rich memory context
           currentTask: activeTask || currentTask,
           playerName: profile ? `${profile.firstName} (${profile.username})` : 'Игрок'
         })
@@ -328,7 +568,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       setChatMessages(prev => {
         const finalChats = [...prev, aiMsg];
-        localStorage.setItem('quest_chat_history', JSON.stringify(finalChats));
+        safeSaveToLocalStorage('quest_chat_history', JSON.stringify(finalChats));
         return finalChats;
       });
     } catch (err) {
@@ -341,9 +581,51 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
       setChatMessages(prev => {
         const finalChats = [...prev, errMsg];
-        localStorage.setItem('quest_chat_history', JSON.stringify(finalChats));
+        safeSaveToLocalStorage('quest_chat_history', JSON.stringify(finalChats));
         return finalChats;
       });
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  // Automated trigger from Spirit Ichchi (e.g., welcome back or inactivity nudge)
+  const triggerSpiritGreeting = async (hiddenPrompt: string) => {
+    if (isChatLoading) return;
+    setIsChatLoading(true);
+
+    try {
+      const activeTask = tasks.find(t => t.id === focusedTaskId) || currentTask;
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: hiddenPrompt,
+          history: chatMessages.slice(-30),
+          currentTask: activeTask || currentTask,
+          playerName: profile ? `${profile.firstName} (${profile.username})` : 'Игрок'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMsg: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'ai',
+          text: data.text || 'Я бодрствую и созерцаю твой путь, богатырь!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setChatMessages(prev => {
+          const finalChats = [...prev, aiMsg];
+          safeSaveToLocalStorage('quest_chat_history', JSON.stringify(finalChats));
+          return finalChats;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to trigger spirit greeting:', err);
     } finally {
       setIsChatLoading(false);
     }
@@ -353,7 +635,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('quest_theme', newTheme);
+    safeSaveToLocalStorage('quest_theme', newTheme);
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
@@ -374,9 +656,15 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       completeTask,
       resetQuest,
       sendChatMessage,
+      triggerSpiritGreeting,
       theme,
       toggleTheme,
-      isChatLoading
+      isChatLoading,
+      activatedTaskId,
+      setActivatedTaskId,
+      customConfig,
+      accentColor,
+      setAccentColor
     }}>
       {children}
     </QuestContext.Provider>

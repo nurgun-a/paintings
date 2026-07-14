@@ -13,45 +13,111 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, expectedVal
   const [cameraPermissionGranted, setCameraPermissionGranted] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let activeStream: MediaStream | null = null;
+    let scanner: any = null;
+    let isMounted = true;
+
     // Check camera availability safely
-    if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => {
-          setCameraPermissionGranted(true);
-        })
-        .catch((err) => {
-          console.warn('Camera permission blocked or unavailable:', err);
-          setCameraPermissionGranted(false);
-        });
-    } else {
-      console.warn('Camera API (getUserMedia) not supported or unavailable in this environment');
-      setCameraPermissionGranted(false);
+    try {
+      if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then((stream) => {
+            if (!isMounted) {
+              stream.getTracks().forEach(track => track.stop());
+              return;
+            }
+            setCameraPermissionGranted(true);
+            activeStream = stream;
+            // Stop tracks immediately as we only wanted to check permissions
+            stream.getTracks().forEach(track => track.stop());
+          })
+          .catch((err) => {
+            console.warn('Camera permission blocked or unavailable:', err);
+            if (isMounted) setCameraPermissionGranted(false);
+          });
+      } else {
+        console.warn('Camera API (getUserMedia) not supported or unavailable in this environment');
+        if (isMounted) setCameraPermissionGranted(false);
+      }
+    } catch (e) {
+      console.warn('Error checking camera availability:', e);
+      if (isMounted) setCameraPermissionGranted(false);
     }
 
-    const scanner = new Html5QrcodeScanner(
-      'qr-reader-container',
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        rememberLastUsedCamera: true
-      },
-      /* verbose= */ false
-    );
+    const initScanner = async () => {
+      // Delay slightly to allow any previous unmount clear() to complete
+      await new Promise(resolve => setTimeout(resolve, 150));
+      if (!isMounted) return;
 
-    scanner.render(
-      (decodedText) => {
-        scanner.clear().catch(e => console.error('Failed to clear qr scanner', e));
-        onScanSuccess(decodedText);
-      },
-      (error) => {
-        // Keep scanning, silent errors are standard for frame-by-frame scanner
+      const container = document.getElementById('qr-reader-container');
+      if (!container) return;
+
+      // If the container already contains HTML/elements, don't re-initialize
+      if (container.children.length > 0) {
+        console.warn('QR scanner already rendering or container not empty');
+        return;
       }
-    );
+
+      try {
+        scanner = new Html5QrcodeScanner(
+          'qr-reader-container',
+          { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true
+          },
+          /* verbose= */ false
+        );
+
+        scanner.render(
+          (decodedText: string) => {
+            if (scanner && typeof scanner.clear === 'function') {
+              scanner.clear()
+                .then(() => {
+                  if (isMounted) onScanSuccess(decodedText);
+                })
+                .catch((e: any) => {
+                  console.error('Failed to clear qr scanner', e);
+                  if (isMounted) onScanSuccess(decodedText);
+                });
+            } else {
+              if (isMounted) onScanSuccess(decodedText);
+            }
+          },
+          (error: any) => {
+            // Keep scanning, silent errors are standard for frame-by-frame scanner
+          }
+        );
+      } catch (err) {
+        console.error('Failed to initialize HTML5 QR Scanner:', err);
+        if (isMounted) setScanError('Не удалось запустить сканер кодов.');
+      }
+    };
+
+    initScanner();
 
     return () => {
-      scanner.clear().catch(err => {
-        // Safe to ignore if scanner wasn't fully initialized
-      });
+      isMounted = false;
+      if (activeStream) {
+        try {
+          activeStream.getTracks().forEach(track => track.stop());
+        } catch (e) {}
+      }
+      if (scanner) {
+        try {
+          // Only attempt to clear if the element is still present in the DOM
+          if (document.getElementById('qr-reader-container')) {
+            const clearPromise = scanner.clear();
+            if (clearPromise && typeof clearPromise.catch === 'function') {
+              clearPromise.catch((err: any) => {
+                console.warn('Non-fatal error clearing QR scanner asynchronously:', err);
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('Non-fatal error clearing QR scanner synchronously:', err);
+        }
+      }
     };
   }, [onScanSuccess]);
 
@@ -74,6 +140,15 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, expectedVal
         </div>
       )}
 
+      {scanError && (
+        <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            {scanError} Используйте ручной ввод кода ниже.
+          </div>
+        </div>
+      )}
+
       {/* Reader Container */}
       <div className="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 relative">
         <div id="qr-reader-container" className="w-full"></div>
@@ -90,24 +165,15 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, expectedVal
       <form onSubmit={handleManualSubmit} className="pt-2 border-t border-slate-100 dark:border-slate-800">
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">
-            Или введите найденный секретный код вручную:
+            Или введите найденный секретный код вручную (нажмите Enter для подтверждения):
           </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={manualInput}
-              onChange={(e) => setManualInput(e.target.value)}
-              placeholder="Введите текст QR-кода..."
-              className="flex-1 px-4 py-2 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500"
-            />
-            <button
-              type="submit"
-              disabled={!manualInput.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> Проверить
-            </button>
-          </div>
+          <input
+            type="text"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            placeholder="Введите текст QR-кода и нажмите Enter..."
+            className="w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500"
+          />
           {expectedValue && (
             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic">
               Подсказка разработчика: Секретный код — "{expectedValue}"

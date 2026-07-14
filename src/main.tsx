@@ -10,10 +10,14 @@ createRoot(document.getElementById('root')!).render(
 );
 
 // Register Service Worker for offline PWA capabilities
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+if ('serviceWorker' in navigator && (import.meta as any).env?.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker registered successfully:', reg.scope))
-      .catch(err => console.error('Service Worker registration failed:', err));
+    try {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+        .catch(err => console.error('Service Worker registration failed:', err));
+    } catch (err) {
+      console.warn('Service Worker registration failed or was blocked:', err);
+    }
   });
 }

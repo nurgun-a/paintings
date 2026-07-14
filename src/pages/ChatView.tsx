@@ -6,12 +6,16 @@ import { useNavigate } from 'react-router-dom';
 
 export const ChatView: React.FC = () => {
   const { 
-    chatMessages, sendChatMessage, isChatLoading, currentTask, profile, resetQuest 
+    chatMessages, sendChatMessage, triggerSpiritGreeting, isChatLoading, currentTask, profile, resetQuest 
   } = useQuest();
   const [input, setInput] = useState('');
   const [showTaskInfo, setShowTaskInfo] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+
+  // Track last active and handle welcome back + inactivity nudges
+  const hasNudgedRef = useRef(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Route protection
   useEffect(() => {
@@ -19,6 +23,48 @@ export const ChatView: React.FC = () => {
       navigate('/register');
     }
   }, [profile, navigate]);
+
+  useEffect(() => {
+    if (!profile?.registered) return;
+
+    // Check for welcome back greeting (if last chat was > 3 hours ago)
+    const lastActiveStr = localStorage.getItem('quest_last_chat_active_time');
+    const now = Date.now();
+    
+    if (lastActiveStr) {
+      const lastActive = parseInt(lastActiveStr, 10);
+      const hoursDiff = (now - lastActive) / (1000 * 60 * 60);
+      if (hoursDiff >= 3 && chatMessages.length > 0 && !isChatLoading) {
+        triggerSpiritGreeting("Игрок зашел в чат спустя долгое время (более 3 часов). Поприветствуй его как живой Дух Иччи!");
+      }
+    }
+    
+    localStorage.setItem('quest_last_chat_active_time', now.toString());
+  }, [profile, triggerSpiritGreeting]);
+
+  // Inactivity nudge: if user is idle on chat view for > 25 seconds
+  useEffect(() => {
+    if (!profile?.registered || isChatLoading) return;
+
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+
+    if (!hasNudgedRef.current) {
+      idleTimerRef.current = setTimeout(() => {
+        if (!isChatLoading && !hasNudgedRef.current) {
+          hasNudgedRef.current = true;
+          triggerSpiritGreeting("[Игрок зашел и долго не пишет в чат. Напиши ему мудрое и загадочное напутствие, мотивирующее задать вопрос или продолжить путь!]");
+        }
+      }, 25000); // 25 seconds of idle
+    }
+
+    return () => {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, [input, chatMessages, isChatLoading, profile, triggerSpiritGreeting]);
 
   // Scroll to bottom when messages list changes
   const scrollToBottom = () => {
@@ -48,9 +94,9 @@ export const ChatView: React.FC = () => {
             <Compass className="w-5 h-5 animate-spin-slow" />
           </div>
           <div>
-            <h2 className="text-xs font-bold text-slate-900 dark:text-white font-sans">Сказитель Олонхо</h2>
+            <h2 className="text-xs font-bold text-slate-900 dark:text-white font-sans">Дух Иччи</h2>
             <p className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> В сети • Помощник ИИ
+              <Sparkles className="w-3 h-3" /> В сети • Покровитель квеста
             </p>
           </div>
         </div>
@@ -131,7 +177,7 @@ export const ChatView: React.FC = () => {
                 <span className="w-1.5 h-1.5 bg-cyan-500 dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                 <span className="w-1.5 h-1.5 bg-cyan-500 dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">Сказитель напевает строки Олонхо...</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">Дух Иччи шепчет тайны тайги...</span>
             </div>
           </div>
         )}
@@ -145,7 +191,7 @@ export const ChatView: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isChatLoading}
-          placeholder="Спросить подсказку у Сказителя Олонхо..."
+          placeholder="Спросить подсказку у Духа Иччи..."
           className="flex-1 px-4 py-2.5 text-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 rounded-xl outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:ring-2 focus:ring-cyan-500/40 transition-all"
         />
         <button

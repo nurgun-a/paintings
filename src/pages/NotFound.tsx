@@ -20,7 +20,7 @@ export const NotFound: React.FC = () => {
         <h1 className="text-4xl font-bold font-mono text-white">404</h1>
         <h2 className="text-lg font-bold text-slate-200 font-sans">Путь потерян</h2>
         <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
-          Похоже, вы зашли в неизведанную глушь Старого Города. Давайте вернемся на карту и продолжим поиски!
+          Похоже, вы сбились со священной тропы трех миров Олонхо. Давайте вернемся к испытаниям богатыря!
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export const NotFound: React.FC = () => {
         onClick={() => navigate('/')}
         className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold py-3.5 px-6 rounded-2xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
       >
-        <Home className="w-4 h-4" /> Вернуться на карту
+        <Home className="w-4 h-4" /> Вернуться к испытаниям
       </button>
     </div>
   );

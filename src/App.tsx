@@ -39,6 +39,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <Link
         to={to}
+        title={label}
         className={`flex flex-col items-center justify-center flex-1 py-1 relative transition-all ${
           isActive
             ? theme === 'dark' 
@@ -101,7 +102,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
 
       {/* Main Content Area */}
-      <main className={`flex-1 ${isRegistered ? 'p-4 max-w-2xl w-full mx-auto' : ''}`}>
+      <main className={`flex-1 ${isRegistered ? 'p-4 pb-24 max-w-2xl w-full mx-auto' : ''}`}>
         {children}
       </main>
 
@@ -109,7 +110,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {isRegistered && (
         <nav className="fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-md border-t border-slate-200 dark:border-zinc-800/80 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.4)] px-3 py-2 flex items-center justify-around transition-colors">
           {renderNavItem('/', <Compass className="w-5 h-5" />, 'Задания')}
-          {renderNavItem('/chat', <MessageCircle className="w-5 h-5" />, 'Чат ИИ')}
+          {renderNavItem('/chat', <MessageCircle className="w-5 h-5" />, 'Дух Иччи')}
           {renderNavItem('/progress', <Trophy className="w-5 h-5" />, 'Прогресс', isQuestFinished ? '🏆' : undefined)}
           {renderNavItem('/profile', <User className="w-5 h-5" />, 'Профиль')}
         </nav>

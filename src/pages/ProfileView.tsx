@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useQuest } from '../context/QuestContext';
+import { useQuest, ACCENT_PALETTES } from '../context/QuestContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
   User, Smartphone, Mail, Award, RotateCcw, Moon, Sun, 
-  Save, Eye, CheckCircle, BarChart, Camera, Mic, Video, AlertCircle 
+  Save, Eye, CheckCircle, BarChart, Camera, Mic, Video, AlertCircle, Palette
 } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {
   const { 
-    profile, progress, tasks, updateProfile, resetQuest, theme, toggleTheme 
+    profile, progress, tasks, updateProfile, resetQuest, theme, toggleTheme, accentColor, setAccentColor 
   } = useQuest();
   const navigate = useNavigate();
 
@@ -235,6 +235,63 @@ export const ProfileView: React.FC = () => {
         </form>
       </motion.div>
 
+      {/* Accent Color Palette Selector */}
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="bg-white dark:bg-[#18181b] rounded-3xl p-6 shadow-md border border-slate-200 dark:border-zinc-800/80 space-y-4 transition-colors"
+      >
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800/80">
+          <Palette className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-white font-sans">Цветовое оформление</h3>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500">Выберите основные тона для вашего богатырского пути</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {ACCENT_PALETTES.map((palette) => {
+            const isSelected = accentColor === palette.id;
+            return (
+              <button
+                key={palette.id}
+                onClick={() => setAccentColor(palette.id)}
+                className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-4 cursor-pointer group hover:scale-[1.01] ${
+                  isSelected 
+                    ? 'bg-cyan-500/5 border-cyan-500 dark:border-cyan-500/80 shadow-sm' 
+                    : 'bg-slate-50/50 dark:bg-zinc-950/20 border-slate-150 dark:border-zinc-850 hover:bg-slate-50 dark:hover:bg-zinc-950/40 hover:border-slate-300 dark:hover:border-zinc-800'
+                }`}
+              >
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                      {palette.name}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[9px] bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider font-mono">
+                        Активен
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-550 leading-relaxed max-w-sm">
+                    {palette.description}
+                  </p>
+                </div>
+
+                {/* Swatches block */}
+                <div className="flex items-center gap-1.5 shrink-0 bg-white/60 dark:bg-zinc-900/40 p-1.5 rounded-xl border border-slate-200/50 dark:border-zinc-800/40 shadow-inner">
+                  <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: palette.colors['400'] }} title="400" />
+                  <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: palette.colors['500'] }} title="500" />
+                  <span className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ backgroundColor: palette.colors['550'] }} title="550" />
+                  <span className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: palette.colors['600'] }} title="600" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* Danger Zone */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -286,9 +343,10 @@ export const ProfileView: React.FC = () => {
           <button
             onClick={() => {
               if (window.confirm('Вы действительно хотите выйти из профиля? Все локальные данные профиля и прогресса будут удалены.')) {
-                localStorage.removeItem('quest_profile');
+                localStorage.removeItem('quest_player_profile');
                 localStorage.removeItem('quest_progress');
                 localStorage.removeItem('quest_chat_history');
+                localStorage.removeItem('quest_focused_task_id');
                 window.location.href = '/register';
               }
             }}

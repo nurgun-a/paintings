@@ -50,10 +50,41 @@ export const FinishView: React.FC = () => {
 
 Испытайте силу богатырского духа и вы!`;
 
-    navigator.clipboard.writeText(reportText).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(reportText).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(err => {
+        console.warn('Failed to copy text using Clipboard API:', err);
+        fallbackCopyText(reportText);
+      });
+    } else {
+      fallbackCopyText(reportText);
+    }
+  };
+
+  const fallbackCopyText = (text: string) => {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        console.warn("Could not copy text automatically.");
+      }
+    } catch (err) {
+      console.error('Fallback copy method failed:', err);
+    }
   };
 
   const handleConfirmReset = () => {

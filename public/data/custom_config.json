@@ -1,0 +1,23 @@
+{
+  "questName": "Якутский олонхо «Ньургун Стремительный»",
+  "backgrounds": {
+    "mainBackgroundUrl": "/images/quest_bg.jpg",
+    "mainBackgroundFallback": "linear-gradient(to bottom, #7dd3fc, #bae6fd, #f0fdf4, #dcfce7)",
+    "sargeWoodColorLight": "#fde68a",
+    "sargeWoodColorMedium": "#f59e0b",
+    "sargeWoodColorDark": "#b45309",
+    "trailPrimaryColor": "#c5a880",
+    "trailDottedColor": "#0891b2"
+  },
+  "customImages": {
+    "sargeActiveImage": "",
+    "sargeCompletedImage": "",
+    "sargeLockedImage": "",
+    "generalSargeImage": ""
+  },
+  "customIcons": {
+    "active": "horse",
+    "completed": "check",
+    "locked": "lock"
+  }
+}
