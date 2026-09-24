@@ -1,6 +1,0 @@
-{
-  "name": "Olonkho Quest Platform",
-  "description": "Интерактивная мобильная квест-платформа (PWA) по мотивам якутского героического эпоса Олонхо «Ньургун Стремительный» с загадками, фотоподтверждениями, проверкой геолокации и мудрыми подсказками ИИ-Сказителя.",
-  "requestFramePermissions": ["camera", "microphone", "geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

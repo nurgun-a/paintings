@@ -1,16 +1,281 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#4f46e5" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/images/icon-192.png" />
-    <title>Якутский Квест Олонхо — Ньургун Стремительный</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Генератор координат · Москва</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0f1216; color: #e8ecf1;
+    user-select: none;
+  }
+  body {
+    display: flex; flex-direction: column;
+    padding: 20px;
+    max-width: 560px; margin: 0 auto;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 8px 0 4px; letter-spacing: -0.3px; }
+  .sub { font-size: 13px; color: #7a8696; margin-bottom: 24px; }
 
+  .card {
+    background: #171c23;
+    border: 1px solid #242b35;
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #6a7686; margin-bottom: 8px; }
+  .coord {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 22px; font-weight: 600;
+    color: #e8ecf1;
+    letter-spacing: -0.5px;
+    margin: 4px 0;
+    word-break: break-all;
+  }
+  .coord small { font-size: 13px; color: #6a7686; font-weight: 400; }
+  .meta { font-size: 12px; color: #7a8696; margin-top: 14px; line-height: 1.6; }
+  .meta b { color: #b8c2cf; font-weight: 500; }
+
+  .placeholder .coord { color: #3d4756; }
+
+  .btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; padding: 18px;
+    font-size: 16px; font-weight: 600;
+    border: none; border-radius: 16px;
+    cursor: pointer; transition: transform .08s, opacity .15s;
+    font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-main {
+    background: linear-gradient(135deg, #4f8cff, #2f6bff);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(79,140,255,.25);
+  }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-sec {
+    background: #1d242e; color: #c7d0dc;
+    padding: 14px; font-size: 14px; margin-bottom: 0;
+  }
+  .btn-sec:disabled { opacity: .4; cursor: default; }
+
+  .history { margin-top: 24px; padding-top: 20px; }
+  .history-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .history h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: #6a7686; margin: 0;
+  }
+  .clear-btn {
+    background: none; border: none; color: #6a7686;
+    font-size: 12px; cursor: pointer; padding: 4px 0;
+    font-family: inherit;
+  }
+  .clear-btn:active { color: #b8c2cf; }
+
+  .history-item {
+    font-family: ui-monospace, monospace;
+    font-size: 13px; color: #8b96a5;
+    padding: 12px 14px;
+    background: #171c23;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between; gap: 10px;
+    cursor: pointer;
+  }
+  .history-item:active { background: #1d242e; }
+  .history-item .time { color: #4f5866; font-size: 11px; }
+</style>
+</head>
+<body>
+
+  <h1>🎲 Случайные координаты</h1>
+  <div class="sub">От 20 до 200 км от МКАД · по кругу</div>
+
+  <div class="card placeholder" id="card">
+    <div class="label">Координаты</div>
+    <div class="coord" id="lat">—</div>
+    <div class="coord" id="lon">—</div>
+    <div class="meta" id="meta">Нажми кнопку ниже, чтобы сгенерировать точку</div>
+  </div>
+
+  <button class="btn btn-main" id="gen">Сгенерировать и открыть на карте</button>
+
+  <div class="btn-row">
+    <button class="btn btn-sec" id="copy" disabled>📋 Копировать</button>
+    <button class="btn btn-sec" id="maps" disabled>🗺 На карте</button>
+  </div>
+
+  <div class="history" id="historyWrap" style="display:none">
+    <div class="history-head">
+      <h2>История</h2>
+      <button class="clear-btn" id="clearHistory">Очистить</button>
+    </div>
+    <div id="history"></div>
+  </div>
+
+<script>
+(function () {
+  // ---------- Константы ----------
+  const CENTER_LAT = 55.7558;         // центр МКАДа
+  const CENTER_LON = 37.6173;
+  const MKAD_RADIUS_KM = 18;          // приблизительный радиус МКАДа
+  const MIN_FROM_MKAD = 20;           // км от МКАДа
+  const MAX_FROM_MKAD = 200;
+  const R_MIN = MKAD_RADIUS_KM + MIN_FROM_MKAD;   // 38 км от центра
+  const R_MAX = MKAD_RADIUS_KM + MAX_FROM_MKAD;   // 218 км от центра
+  const KM_PER_DEG_LAT = 111.32;
+
+  const STORAGE_KEY = 'coord_history_v1';
+  const MAX_HISTORY = 20;
+
+  let current = null;
+  let history = [];
+
+  const $ = id => document.getElementById(id);
+
+  // ---------- Хранилище ----------
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) history = JSON.parse(raw);
+    } catch (e) {
+      console.warn('Не удалось загрузить историю:', e);
+      history = [];
+    }
+  }
+
+  function saveHistory() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.warn('Не удалось сохранить историю:', e);
+    }
+  }
+
+  // ---------- Генерация точки ----------
+  function randomPoint() {
+    // Равномерно по площади кольца (sqrt обязателен, иначе кучкуется в центре)
+    const r = Math.sqrt(R_MIN * R_MIN + Math.random() * (R_MAX * R_MAX - R_MIN * R_MIN));
+    const theta = Math.random() * Math.PI * 2;
+
+    const dLat = (r * Math.cos(theta)) / KM_PER_DEG_LAT;
+    const lat = CENTER_LAT + dLat;
+    const lon = CENTER_LON + (r * Math.sin(theta)) / (KM_PER_DEG_LAT * Math.cos(lat * Math.PI / 180));
+
+    return { lat, lon, r };
+  }
+
+  const fmt = (v, d = 5) => v.toFixed(d);
+
+  // ---------- Отрисовка ----------
+  function render(point) {
+    $('lat').innerHTML = fmt(point.lat) + ' <small>°N</small>';
+    $('lon').innerHTML = fmt(point.lon) + ' <small>°E</small>';
+
+    const distFromMkad = point.r - MKAD_RADIUS_KM;
+    const bearing = Math.round(
+      (Math.atan2(point.lon - CENTER_LON, point.lat - CENTER_LAT) * 180 / Math.PI + 360) % 360
+    );
+
+    $('meta').innerHTML = `От МКАДа: <b>${distFromMkad.toFixed(1)} км</b> · Азимут: <b>${bearing}°</b>`;
+    $('card').classList.remove('placeholder');
+    $('copy').disabled = false;
+    $('maps').disabled = false;
+  }
+
+  function timeAgo(ts) {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'только что';
+    if (diff < 3600) return Math.floor(diff / 60) + ' мин';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' ч';
+    return Math.floor(diff / 86400) + ' д';
+  }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      $('historyWrap').style.display = 'none';
+      return;
+    }
+    $('historyWrap').style.display = 'block';
+    $('history').innerHTML = history
+      .map(h => `<div class="history-item" data-ts="${h.ts}">
+        <span>${h.text}</span>
+        <span class="time">${timeAgo(h.ts)}</span>
+      </div>`)
+      .join('');
+
+    [...$('history').children].forEach((el, i) => {
+      el.onclick = () => openGoogleMaps(history[i]);
+    });
+  }
+
+  function pushHistory(point) {
+    const text = `${fmt(point.lat)}, ${fmt(point.lon)}`;
+    if (history[0]?.text === text) return;
+    history.unshift({ text, lat: point.lat, lon: point.lon, ts: Date.now() });
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    saveHistory();
+    renderHistory();
+  }
+
+  // ---------- Google Maps ----------
+  function openGoogleMaps(point) {
+    const url = `https://www.google.com/maps/search/?api=1&query=${point.lat},${point.lon}`;
+    window.open(url, '_blank', 'noopener');
+  }
+
+  // ---------- Инициализация ----------
+  loadHistory();
+  renderHistory();
+
+  // ---------- Кнопки ----------
+  $('gen').onclick = () => {
+    current = randomPoint();
+
+    // ВАЖНО: сначала открываем карту — синхронно внутри клика,
+    // чтобы Chrome не заблокировал новую вкладку как попап
+    openGoogleMaps(current);
+
+    // Потом всё остальное
+    render(current);
+    pushHistory(current);
+
+    if (navigator.vibrate) navigator.vibrate(15);
+  };
+
+  $('copy').onclick = async () => {
+    if (!current) return;
+    const text = `${fmt(current.lat)}, ${fmt(current.lon)}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = $('copy');
+      const old = btn.textContent;
+      btn.textContent = '✓ Скопировано';
+      setTimeout(() => btn.textContent = old, 1200);
+      if (navigator.vibrate) navigator.vibrate(10);
+    } catch (e) {
+      prompt('Скопируй координаты:', text);
+    }
+  };
+
+  $('maps').onclick = () => current && openGoogleMaps(current);
+
+  $('clearHistory').onclick = () => {
+    if (!confirm('Удалить всю историю?')) return;
+    history = [];
+    saveHistory();
+    renderHistory();
+  };
+})();
+</script>
+</body>
+</html>
