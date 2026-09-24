@@ -43,6 +43,46 @@
 
   .placeholder .coord { color: #3d4756; }
 
+  /* --- Настройки диапазона --- */
+  .range-card {
+    background: #171c23;
+    border: 1px solid #242b35;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .range-card label {
+    font-size: 12px;
+    color: #7a8696;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .range-inputs {
+    display: flex; align-items: center; gap: 8px;
+    flex: 1;
+  }
+  .range-inputs input {
+    flex: 1; min-width: 0;
+    background: #0f1216;
+    border: 1px solid #242b35;
+    border-radius: 10px;
+    color: #e8ecf1;
+    font-family: ui-monospace, monospace;
+    font-size: 15px;
+    padding: 10px 12px;
+    text-align: center;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .range-inputs input::-webkit-outer-spin-button,
+  .range-inputs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .range-inputs input:focus { border-color: #4f8cff; }
+  .range-inputs span { color: #4f5866; font-size: 14px; }
+
   .btn {
     display: flex; align-items: center; justify-content: center;
     width: 100%; padding: 18px;
@@ -59,11 +99,50 @@
     box-shadow: 0 8px 24px rgba(79,140,255,.25);
   }
   .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .btn-sec {
     background: #1d242e; color: #c7d0dc;
-    padding: 14px; font-size: 14px; margin-bottom: 0;
+    padding: 14px; font-size: 13px; margin-bottom: 0;
   }
   .btn-sec:disabled { opacity: .4; cursor: default; }
+
+  /* --- Модалка ручного ввода --- */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #171c23;
+    border: 1px solid #242b35;
+    border-radius: 20px;
+    padding: 24px 20px;
+    width: 100%; max-width: 420px;
+  }
+  .modal h3 { margin: 0 0 6px; font-size: 16px; }
+  .modal .modal-sub { font-size: 12px; color: #7a8696; margin-bottom: 18px; }
+  .modal label {
+    display: block;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #6a7686; margin-bottom: 6px;
+  }
+  .modal input {
+    width: 100%;
+    background: #0f1216;
+    border: 1px solid #242b35;
+    border-radius: 10px;
+    color: #e8ecf1;
+    font-family: ui-monospace, monospace;
+    font-size: 16px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    outline: none;
+  }
+  .modal input:focus { border-color: #4f8cff; }
 
   .history { margin-top: 24px; padding-top: 20px; }
   .history-head {
@@ -88,17 +167,30 @@
     background: #171c23;
     border-radius: 10px;
     margin-bottom: 6px;
-    display: flex; justify-content: space-between; gap: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px;
     cursor: pointer;
   }
   .history-item:active { background: #1d242e; }
   .history-item .time { color: #4f5866; font-size: 11px; }
+  .history-item.manual .time::before { content: '✎ '; color: #4f8cff; }
 </style>
 </head>
 <body>
 
-  <h1>🎲 Случайные координаты</h1>
-  <div class="sub">От 20 до 200 км от МКАД · по кругу</div>
+  <h1>РАНДОМАЙЗЕР</h1>
+  <div class="sub">Генератор координат · радиус настраивается</div>
+
+  <!-- Настройка диапазона -->
+  <div class="range-card">
+    <label>От Москвы</label>
+    <div class="range-inputs">
+      <input type="number" id="rangeMin" inputmode="numeric" min="0" max="2000" value="20">
+      <span>—</span>
+      <input type="number" id="rangeMax" inputmode="numeric" min="0" max="2000" value="200">
+      <span style="white-space:nowrap;">км</span>
+    </div>
+  </div>
 
   <div class="card placeholder" id="card">
     <div class="label">Координаты</div>
@@ -109,9 +201,10 @@
 
   <button class="btn btn-main" id="gen">Сгенерировать и открыть на карте</button>
 
-  <div class="btn-row">
-    <button class="btn btn-sec" id="copy" disabled>📋 Копировать</button>
-    <button class="btn btn-sec" id="maps" disabled>🗺 На карте</button>
+  <div class="btn-row-3">
+    <button class="btn btn-sec" id="copy" disabled>📋 Копир.</button>
+    <button class="btn btn-sec" id="maps" disabled>🗺 Карта</button>
+    <button class="btn btn-sec" id="manual">✎ Вручную</button>
   </div>
 
   <div class="history" id="historyWrap" style="display:none">
@@ -122,19 +215,35 @@
     <div id="history"></div>
   </div>
 
+  <!-- Модалка ручного ввода -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Добавить точку вручную</h3>
+      <div class="modal-sub">Введи координаты в градусах, точка добавится в историю и откроется на карте</div>
+
+      <label>Широта (lat)</label>
+      <input type="text" id="mLat" inputmode="decimal" placeholder="55.7558">
+
+      <label>Долгота (lon)</label>
+      <input type="text" id="mLon" inputmode="decimal" placeholder="37.6173">
+
+      <div class="btn-row">
+        <button class="btn btn-sec" id="mCancel">Отмена</button>
+        <button class="btn btn-main" id="mAdd" style="margin-bottom:0;">Добавить</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 (function () {
   // ---------- Константы ----------
   const CENTER_LAT = 55.7558;         // центр МКАДа
   const CENTER_LON = 37.6173;
-  const MKAD_RADIUS_KM = 18;          // приблизительный радиус МКАДа
-  const MIN_FROM_MKAD = 20;           // км от МКАДа
-  const MAX_FROM_MKAD = 200;
-  const R_MIN = MKAD_RADIUS_KM + MIN_FROM_MKAD;   // 38 км от центра
-  const R_MAX = MKAD_RADIUS_KM + MAX_FROM_MKAD;   // 218 км от центра
+  const MKAD_RADIUS_KM = 18;
   const KM_PER_DEG_LAT = 111.32;
 
   const STORAGE_KEY = 'coord_history_v1';
+  const RANGE_KEY = 'coord_range_v1';
   const MAX_HISTORY = 20;
 
   let current = null;
@@ -161,12 +270,54 @@
     }
   }
 
+  function loadRange() {
+    try {
+      const raw = localStorage.getItem(RANGE_KEY);
+      if (raw) {
+        const { min, max } = JSON.parse(raw);
+        if (typeof min === 'number' && typeof max === 'number') {
+          $('rangeMin').value = min;
+          $('rangeMax').value = max;
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveRange() {
+    const min = parseFloat($('rangeMin').value);
+    const max = parseFloat($('rangeMax').value);
+    try {
+      localStorage.setItem(RANGE_KEY, JSON.stringify({ min, max }));
+    } catch (e) { /* ignore */ }
+  }
+
+  // Возвращает валидный диапазон {min, max} в км от МКАДа
+  function getRange() {
+    let min = parseFloat($('rangeMin').value);
+    let max = parseFloat($('rangeMax').value);
+    if (!isFinite(min) || min < 0) min = 0;
+    if (!isFinite(max) || max < 0) max = 200;
+    if (min > max) [min, max] = [max, min];   // на всякий — меняем местами
+    return { min, max };
+  }
+
   // ---------- Генерация точки ----------
   function randomPoint() {
-    // Равномерно по площади кольца (sqrt обязателен, иначе кучкуется в центре)
-    const r = Math.sqrt(R_MIN * R_MIN + Math.random() * (R_MAX * R_MAX - R_MIN * R_MIN));
-    const theta = Math.random() * Math.PI * 2;
+    const { min, max } = getRange();
 
+    // границы в км от центра (МКАД + смещение)
+    const rMin = MKAD_RADIUS_KM + min;
+    const rMax = MKAD_RADIUS_KM + max;
+
+    let r;
+    if (rMax <= rMin) {
+      r = rMin;
+    } else {
+      // Равномерно по площади кольца
+      r = Math.sqrt(rMin * rMin + Math.random() * (rMax * rMax - rMin * rMin));
+    }
+
+    const theta = Math.random() * Math.PI * 2;
     const dLat = (r * Math.cos(theta)) / KM_PER_DEG_LAT;
     const lat = CENTER_LAT + dLat;
     const lon = CENTER_LON + (r * Math.sin(theta)) / (KM_PER_DEG_LAT * Math.cos(lat * Math.PI / 180));
@@ -181,12 +332,21 @@
     $('lat').innerHTML = fmt(point.lat) + ' <small>°N</small>';
     $('lon').innerHTML = fmt(point.lon) + ' <small>°E</small>';
 
-    const distFromMkad = point.r - MKAD_RADIUS_KM;
-    const bearing = Math.round(
-      (Math.atan2(point.lon - CENTER_LON, point.lat - CENTER_LAT) * 180 / Math.PI + 360) % 360
-    );
+    // если у точки известен радиус — показываем расстояние от МКАДа
+    if (typeof point.r === 'number') {
+      const distFromMkad = point.r - MKAD_RADIUS_KM;
+      $('meta').innerHTML = `От МКАДа: <b>${distFromMkad.toFixed(1)} км</b>`;
+    } else {
+      // введено вручную — считаем реальное расстояние до центра
+      const dLatKm = (point.lat - CENTER_LAT) * KM_PER_DEG_LAT;
+      const dLonKm = (point.lon - CENTER_LON) * KM_PER_DEG_LAT * Math.cos(point.lat * Math.PI / 180);
+      const distKm = Math.sqrt(dLatKm * dLatKm + dLonKm * dLonKm);
+      const fromMkad = distKm - MKAD_RADIUS_KM;
+      $('meta').innerHTML = fromMkad > 0
+        ? `От МКАДа: <b>${fromMkad.toFixed(1)} км</b>`
+        : `<b>Внутри МКАДа</b> (${distKm.toFixed(1)} км от центра)`;
+    }
 
-    $('meta').innerHTML = `От МКАДа: <b>${distFromMkad.toFixed(1)} км</b> · Азимут: <b>${bearing}°</b>`;
     $('card').classList.remove('placeholder');
     $('copy').disabled = false;
     $('maps').disabled = false;
@@ -207,7 +367,7 @@
     }
     $('historyWrap').style.display = 'block';
     $('history').innerHTML = history
-      .map(h => `<div class="history-item" data-ts="${h.ts}">
+      .map(h => `<div class="history-item${h.manual ? ' manual' : ''}" data-ts="${h.ts}">
         <span>${h.text}</span>
         <span class="time">${timeAgo(h.ts)}</span>
       </div>`)
@@ -218,10 +378,16 @@
     });
   }
 
-  function pushHistory(point) {
+  function pushHistory(point, manual = false) {
     const text = `${fmt(point.lat)}, ${fmt(point.lon)}`;
     if (history[0]?.text === text) return;
-    history.unshift({ text, lat: point.lat, lon: point.lon, ts: Date.now() });
+    history.unshift({
+      text,
+      lat: point.lat,
+      lon: point.lon,
+      ts: Date.now(),
+      manual
+    });
     if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
     saveHistory();
     renderHistory();
@@ -235,19 +401,19 @@
 
   // ---------- Инициализация ----------
   loadHistory();
+  loadRange();
   renderHistory();
 
   // ---------- Кнопки ----------
   $('gen').onclick = () => {
     current = randomPoint();
 
-    // ВАЖНО: сначала открываем карту — синхронно внутри клика,
-    // чтобы Chrome не заблокировал новую вкладку как попап
+    // ВАЖНО: открываем карту первым делом, синхронно внутри клика
     openGoogleMaps(current);
 
-    // Потом всё остальное
     render(current);
-    pushHistory(current);
+    pushHistory(current, false);
+    saveRange();
 
     if (navigator.vibrate) navigator.vibrate(15);
   };
@@ -259,7 +425,7 @@
       await navigator.clipboard.writeText(text);
       const btn = $('copy');
       const old = btn.textContent;
-      btn.textContent = '✓ Скопировано';
+      btn.textContent = '✓ Скопир.';
       setTimeout(() => btn.textContent = old, 1200);
       if (navigator.vibrate) navigator.vibrate(10);
     } catch (e) {
@@ -274,6 +440,53 @@
     history = [];
     saveHistory();
     renderHistory();
+  };
+
+  // ---------- Модалка «Вручную» ----------
+  const modalBg = $('modalBg');
+
+  function openModal() {
+    $('mLat').value = '';
+    $('mLon').value = '';
+    modalBg.classList.add('show');
+    setTimeout(() => $('mLat').focus(), 100);
+  }
+
+  function closeModal() {
+    modalBg.classList.remove('show');
+  }
+
+  $('manual').onclick = openModal;
+  $('mCancel').onclick = closeModal;
+  modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
+
+  $('mAdd').onclick = () => {
+    // поддержка запятой как разделителя
+    const latRaw = $('mLat').value.trim().replace(',', '.');
+    const lonRaw = $('mLon').value.trim().replace(',', '.');
+    const lat = parseFloat(latRaw);
+    const lon = parseFloat(lonRaw);
+
+    if (!isFinite(lat) || lat < -90 || lat > 90) {
+      alert('Широта должна быть числом от -90 до 90');
+      return;
+    }
+    if (!isFinite(lon) || lon < -180 || lon > 180) {
+      alert('Долгота должна быть числом от -180 до 180');
+      return;
+    }
+
+    const point = { lat, lon };  // без r → render посчитает расстояние сам
+    closeModal();
+
+    // карта — синхронно
+    openGoogleMaps(point);
+
+    current = point;
+    render(point);
+    pushHistory(point, true);
+
+    if (navigator.vibrate) navigator.vibrate(15);
   };
 })();
 </script>
